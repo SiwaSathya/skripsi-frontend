@@ -9,26 +9,40 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #121212; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; }
         .chat-container { height: calc(100vh - 180px); }
         
+        /* Markdown Styling */
         .markdown-body ul { list-style-type: disc; margin-left: 1.25rem; margin-bottom: 1rem; }
         .markdown-body p { margin-bottom: 0.75rem; line-height: 1.6; }
         .markdown-body strong { color: #fb923c; font-weight: 600; }
         
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #444; }
 
-        .card-answer { border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease; }
+        /* Box Height Limit & Internal Scroll */
+        .content-scroll {
+            max-height: 350px; /* Limit tinggi box */
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+
+        .card-answer { 
+            border: 1px solid rgba(255,255,255,0.05); 
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease; 
+        }
         
-        /* Animasi Skeleton Loading */
         .skeleton {
-            background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+            background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
-            border-radius: 4px;
+            border-radius: 8px;
         }
 
         @keyframes skeleton-loading {
@@ -40,9 +54,9 @@
 <body class="text-gray-200">
 
     <div class="flex flex-col h-screen">
-        <header class="p-4 border-b border-white/10 flex justify-between items-center bg-[#1a1a1a] shadow-sm">
+        <header class="p-4 border-b border-white/10 flex justify-between items-center bg-[#141414]/80 backdrop-blur-md sticky top-0 z-50">
             <div class="flex items-center gap-3">
-                <div class="bg-orange-600 p-2 rounded-lg shadow-lg shadow-orange-900/20">
+                <div class="bg-orange-600 p-2 rounded-lg shadow-lg shadow-orange-900/40">
                     <i class="fa-solid fa-om text-white text-xl"></i>
                 </div>
                 <div>
@@ -50,29 +64,36 @@
                     <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">BPK Wilayah XV - Multi-Agent System</p>
                 </div>
             </div>
-            <div class="hidden md:block text-xs text-gray-500 font-mono">Research by: Siwa Sathyaprilia</div>
+            <div class="hidden md:block text-xs text-gray-500 font-mono bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                Research by: Siwa Sathyaprilia
+            </div>
         </header>
 
-        <div id="chat-box" class="chat-container overflow-y-auto p-4 md:px-8 lg:px-16 space-y-10">
+        <div id="chat-box" class="chat-container overflow-y-auto p-4 md:px-8 lg:px-12 space-y-12">
             <div id="welcome" class="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div class="p-6 bg-white/5 rounded-full border border-white/5">
-                    <i class="fa-solid fa-layer-group text-5xl text-gray-700"></i>
+                <div class="p-6 bg-white/5 rounded-3xl border border-white/5 animate-pulse">
+                    <i class="fa-solid fa-microchip text-5xl text-gray-700"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white">Analisis Budaya Bali Digital</h2>
-                <p class="text-gray-500 max-w-md mx-auto italic">Melihat perbandingan akurasi antara Model Fine-Tuned dan LLM General.</p>
+                <h2 class="text-2xl font-bold text-white tracking-tight">Sistem Multi-Agent Analisis Budaya</h2>
+                <p class="text-gray-500 max-w-md mx-auto leading-relaxed">Membandingkan DeepSeek R1, Fine-Tuned Model, dan Gemini secara paralel.</p>
             </div>
         </div>
 
-        <div class="p-6 bg-[#1a1a1a] border-t border-white/10">
-            <div class="max-w-6xl mx-auto">
-                <div class="relative flex items-end gap-3 bg-[#262626] rounded-2xl p-2 border border-white/5 focus-within:border-orange-500/50 transition-colors">
+        <div class="p-6 bg-[#0f0f0f] border-t border-white/10">
+            <div class="max-w-5xl mx-auto">
+                <div class="relative flex items-end gap-3 bg-[#1a1a1a] rounded-2xl p-2 border border-white/10 focus-within:border-orange-500/50 focus-within:ring-1 focus-within:ring-orange-500/20 transition-all shadow-2xl">
                     <textarea id="user-input" rows="1" 
-                        class="w-full bg-transparent text-white py-3 px-4 focus:outline-none resize-none max-h-48"
-                        placeholder="Tanyakan sesuatu..."></textarea>
+                        class="w-full bg-transparent text-white py-3 px-4 focus:outline-none resize-none max-h-40"
+                        placeholder="Masukkan pertanyaan penelitian budaya..."></textarea>
                     
-                    <button id="send-btn" class="bg-orange-600 text-white p-3 rounded-xl hover:bg-orange-500 transition-all mb-1 mr-1">
-                        <i class="fa-solid fa-paper-plane px-1"></i>
+                    <button id="send-btn" class="bg-orange-600 text-white p-3.5 rounded-xl hover:bg-orange-500 transition-all shadow-lg hover:scale-105 active:scale-95">
+                        <i class="fa-solid fa-paper-plane"></i>
                     </button>
+                </div>
+                <div class="flex justify-center gap-6 mt-3 text-[9px] text-gray-600 uppercase tracking-[0.2em]">
+                    <span>DeepSeek R1</span>
+                    <span>Qwen 4B (Fine-Tuned)</span>
+                    <span>Gemini 1.5 Pro</span>
                 </div>
             </div>
         </div>
@@ -89,47 +110,48 @@
         function createMessageWrapper(userText) {
             welcome.classList.add('hidden');
             
-            // Container Utama
             const wrapper = document.createElement('div');
-            wrapper.className = "flex flex-col space-y-4 animate-fade-in";
+            wrapper.className = "flex flex-col space-y-6 animate-fade-in";
 
-            // Bubble Chat User
+            // User Bubble
             const userDiv = document.createElement('div');
             userDiv.className = "flex justify-end";
             userDiv.innerHTML = `
-                <div class="bg-orange-600/10 border border-orange-600/30 text-orange-100 px-5 py-3 rounded-2xl rounded-tr-none max-w-2xl">
-                    <p class="text-sm md:text-base">${userText}</p>
+                <div class="bg-gradient-to-br from-orange-600 to-orange-700 text-white px-6 py-3 rounded-2xl rounded-tr-none max-w-2xl shadow-xl border border-white/10">
+                    <p class="text-sm md:text-base font-medium">${userText}</p>
                 </div>
             `;
             wrapper.appendChild(userDiv);
 
-            // Container 3 Kolom Jawaban
+            // AI Grid (2x2 on Desktop)
             const aiWrapper = document.createElement('div');
-            aiWrapper.className = "grid grid-cols-1 md:grid-cols-3 gap-4 mb-6";
+            aiWrapper.className = "grid grid-cols-1 md:grid-cols-2 gap-6 mb-10";
             aiWrapper.innerHTML = `
-                ${createSkeletonCard("Fine-Tuned Model", "fa-brain", "text-blue-400")}
-                ${createSkeletonCard("Gemini From Google", "fa-wand-magic-sparkles", "text-purple-400")}
-                ${createSkeletonCard("Final Conclusion", "fa-award", "text-green-400")}
+                ${createSkeletonCard("DeepSeek R1 (Reasoning)", "fa-brain", "text-rose-400")}
+                ${createSkeletonCard("Fine-Tuned Model", "fa-microchip", "text-blue-400")}
+                ${createSkeletonCard("Gemini Enhancer", "fa-wand-magic-sparkles", "text-purple-400")}
+                ${createSkeletonCard("Final Conclusion", "fa-check-double", "text-green-400")}
             `;
             
             wrapper.appendChild(aiWrapper);
             chatBox.appendChild(wrapper);
             chatBox.scrollTop = chatBox.scrollHeight;
             
-            return aiWrapper; // Return container AI untuk diupdate nanti
+            return aiWrapper;
         }
 
         function createSkeletonCard(title, icon, colorClass) {
             return `
-                <div class="card-answer bg-white/5 p-5 rounded-2xl flex flex-col h-full min-h-[200px]">
-                    <div class="flex items-center gap-2 mb-4">
-                        <i class="fa-solid ${icon} ${colorClass} text-sm"></i>
-                        <h3 class="font-bold text-[11px] uppercase tracking-widest ${colorClass}">${title}</h3>
+                <div class="card-answer p-6 rounded-3xl flex flex-col h-full shadow-lg">
+                    <div class="flex items-center gap-3 mb-5">
+                        <i class="fa-solid ${icon} ${colorClass} text-lg"></i>
+                        <h3 class="font-bold text-xs uppercase tracking-widest ${colorClass}">${title}</h3>
                     </div>
-                    <div class="space-y-3">
+                    <div class="space-y-4">
                         <div class="skeleton h-3 w-full"></div>
                         <div class="skeleton h-3 w-5/6"></div>
                         <div class="skeleton h-3 w-4/6"></div>
+                        <div class="skeleton h-3 w-full"></div>
                     </div>
                 </div>
             `;
@@ -137,24 +159,27 @@
 
         function updateAIContent(container, data) {
             const sections = [
-                { content: data.fine_tuned, color: "text-blue-400", icon: "fa-brain", title: "Fine-Tuned Model", bg: "bg-blue-400/5" },
-                { content: data.gemini, color: "text-purple-400", icon: "fa-wand-magic-sparkles", title: "Gemini From Google", bg: "bg-purple-400/5" },
-                { content: data.conclusion, color: "text-green-400", icon: "fa-award", title: "Final Conclusion", bg: "bg-green-400/5" }
+                { content: data.deepseek, color: "text-rose-400", icon: "fa-brain", title: "DeepSeek R1 (Reasoning)", bg: "border-rose-500/20" },
+                { content: data.fine_tuned, color: "text-blue-400", icon: "fa-microchip", title: "Fine-Tuned Model", bg: "border-blue-500/20" },
+                { content: data.gemini, color: "text-purple-400", icon: "fa-wand-magic-sparkles", title: "Gemini Enhancer", bg: "border-purple-500/20" },
+                { content: data.conclusion, color: "text-green-400", icon: "fa-check-double", title: "Final Conclusion", bg: "border-green-500/20" }
             ];
 
-            container.innerHTML = ''; // Hapus skeleton
+            container.innerHTML = ''; 
 
             sections.forEach(sec => {
                 const secDiv = document.createElement('div');
-                secDiv.className = `card-answer ${sec.bg} p-5 rounded-2xl flex flex-col h-full`;
-                let cleanContent = (sec.content || "No data").replace(/\\n/g, '\n');
+                secDiv.className = `card-answer p-6 rounded-3xl flex flex-col h-full border ${sec.bg}`;
+                let cleanContent = (sec.content || "Data tidak ditemukan dalam alur n8n.").replace(/\\n/g, '\n');
 
                 secDiv.innerHTML = `
-                    <div class="flex items-center gap-2 mb-4 pb-2 border-b border-white/5">
-                        <i class="fa-solid ${sec.icon} ${sec.color} text-sm"></i>
+                    <div class="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
+                        <i class="fa-solid ${sec.icon} ${sec.color} text-lg"></i>
                         <h3 class="font-bold text-[11px] uppercase tracking-widest ${sec.color}">${sec.title}</h3>
                     </div>
-                    <div class="text-gray-300 text-sm markdown-body">${marked.parse(cleanContent)}</div>
+                    <div class="content-scroll text-gray-300 text-sm markdown-body">
+                        ${marked.parse(cleanContent)}
+                    </div>
                 `;
                 container.appendChild(secDiv);
             });
@@ -168,7 +193,6 @@
             userInput.value = '';
             userInput.style.height = 'auto';
             
-            // 1. Tampilkan Pertanyaan & Skeleton Loading Segera
             const aiContainer = createMessageWrapper(message);
 
             try {
@@ -179,12 +203,13 @@
                 });
 
                 const data = await response.json();
-                
-                // 2. Ganti Skeleton dengan Data Asli
                 updateAIContent(aiContainer, data);
 
             } catch (error) {
-                aiContainer.innerHTML = `<div class='col-span-3 text-center text-red-400 p-4 bg-red-900/20 rounded-xl'>Gagal memuat jawaban. Cek koneksi n8n Anda.</div>`;
+                aiContainer.innerHTML = `<div class='col-span-full text-center text-red-400 p-6 bg-red-900/10 border border-red-900/20 rounded-2xl'>
+                    <i class="fa-solid fa-triangle-exclamation mb-2 text-xl"></i>
+                    <p>Gagal menghubungi Server n8n. Pastikan workflow aktif.</p>
+                </div>`;
                 console.error(error);
             }
         }
@@ -195,6 +220,12 @@
                 e.preventDefault();
                 sendMessage();
             }
+        });
+
+        // Auto-resize textarea
+        userInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
         });
     </script>
 </body>
