@@ -6,11 +6,16 @@
     <title>Bali Culture AI - BPK XV</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         .chat-container { height: calc(100vh - 160px); }
-        .markdown-body { line-height: 1.6; }
+        /* Styling untuk hasil render markdown */
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; }
+        .markdown-body ol { list-style-type: decimal; margin-left: 1.5rem; }
+        .markdown-body strong { color: #f97316; font-weight: bold; }
+        .markdown-body p { margin-bottom: 0.5rem; }
         ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 10px; }
     </style>
 </head>
 <body class="bg-[#212121] text-gray-100 font-sans">
@@ -52,7 +57,6 @@
         const sendBtn = document.getElementById('send-btn');
         const welcome = document.getElementById('welcome');
 
-        // GANTI URL INI DENGAN URL WEBHOOK N8N ANDA (PRODUCTION URL)
         const N8N_WEBHOOK_URL = "https://n8n.arcomteknologi.co.id/webhook/85e0e8c6-24d2-4aea-8a02-a3b4a6e2fd3f";
 
         function appendMessage(role, text) {
@@ -60,13 +64,16 @@
             const msgDiv = document.createElement('div');
             msgDiv.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start'}`;
             
+            // Render text sebagai markdown jika dari AI
+            const formattedText = role === 'assistant' ? marked.parse(text) : text;
+
             const content = `
-                <div class="max-w-[80%] p-3 rounded-2xl ${role === 'user' ? 'bg-[#2f2f2f]' : 'bg-transparent'}">
+                <div class="max-w-[85%] p-3 rounded-2xl ${role === 'user' ? 'bg-[#2f2f2f]' : 'bg-transparent'}">
                     <div class="flex items-center mb-1">
-                        <i class="fa-solid ${role === 'user' ? 'fa-user-circle' : 'fa-robot text-orange-500'} mr-2"></i>
+                        <i class="fa-solid ${role === 'user' ? 'fa-user-circle text-gray-400' : 'fa-robot text-orange-500'} mr-2"></i>
                         <span class="font-bold text-sm">${role === 'user' ? 'Anda' : 'BaliAI'}</span>
                     </div>
-                    <div class="text-gray-200 markdown-body">${text}</div>
+                    <div class="text-gray-200 markdown-body text-sm md:text-base">${formattedText}</div>
                 </div>
             `;
             msgDiv.innerHTML = content;
@@ -81,10 +88,13 @@
             appendMessage('user', message);
             userInput.value = '';
             
-            // Loading state
+            // Tampilkan loading placeholder
+            const loadingId = "loading-" + Date.now();
             const loadingDiv = document.createElement('div');
-            loadingDiv.innerHTML = `<p class='text-gray-500 italic animate-pulse ml-10'>Berpikir...</p>`;
+            loadingDiv.id = loadingId;
+            loadingDiv.innerHTML = `<p class='text-gray-500 italic animate-pulse ml-10 text-sm'>Sedang meramu jawaban...</p>`;
             chatBox.appendChild(loadingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
 
             try {
                 const response = await fetch(N8N_WEBHOOK_URL, {
@@ -93,17 +103,20 @@
                     body: JSON.stringify({ user: message })
                 });
 
-                const data = await response.json();
-                chatBox.removeChild(loadingDiv);
+                // PERUBAHAN DI SINI: Menggunakan .text() karena respon n8n bukan JSON
+                const replyText = await response.text();
                 
-                // Asumsi n8n mengembalikan JSON dengan key "output" atau langsung text
-                const reply = data.output || data[0]?.output || JSON.stringify(data);
-                appendMessage('assistant', reply);
+                // Hapus loading
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                
+                appendMessage('assistant', replyText);
 
             } catch (error) {
-                chatBox.removeChild(loadingDiv);
-                appendMessage('assistant', "Maaf, terjadi kesalahan koneksi ke server n8n.");
-                console.error(error);
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+                appendMessage('assistant', "Gagal terhubung ke server. Pastikan n8n Anda aktif.");
+                console.error("Error Fetch:", error);
             }
         }
 
