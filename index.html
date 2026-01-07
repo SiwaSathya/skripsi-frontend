@@ -46,8 +46,13 @@
         .toast { animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
-        /* Cursor for disabled elements */
-        button:disabled, input[type="range"]:disabled { cursor: not-allowed; opacity: 0.8; }
+        button:disabled, input[type="range"]:disabled { cursor: not-allowed; opacity: 0.6; }
+
+        /* Logo Glow Effect */
+        .logo-glow {
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+            filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.3));
+        }
     </style>
 </head>
 <body class="text-gray-200">
@@ -65,16 +70,20 @@
                     <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">BPK Wilayah XV - Multi-Agent System</p>
                 </div>
             </div>
-            <div class="hidden md:block text-xs text-gray-500 font-mono">Session ID: <span id="session-display" class="text-orange-500/80"></span></div>
+            <div class="hidden md:block text-[10px] text-gray-500 font-mono bg-white/5 px-3 py-1 rounded-md border border-white/10">
+                SID: <span id="session-display" class="text-orange-400"></span>
+            </div>
         </header>
 
         <div id="chat-box" class="chat-container overflow-y-auto p-4 md:px-8 lg:px-12 space-y-12 pb-32">
-            <div id="welcome" class="flex flex-col items-center justify-center h-full text-center space-y-4">
-                <div class="p-6 bg-white/5 rounded-3xl border border-white/5 animate-pulse">
-                    <i class="fa-solid fa-vial-circle-check text-5xl text-gray-700"></i>
+            <div id="welcome" class="flex flex-col items-center justify-center h-full text-center space-y-6">
+                <div class="p-8 bg-orange-500/5 rounded-full border border-orange-500/10 shadow-[0_0_50px_rgba(249,115,22,0.1)]">
+                    <i class="fa-solid fa-microchip text-6xl text-orange-500 logo-glow"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white tracking-tight">Analisis Budaya Bali Digital</h2>
-                <p class="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed italic">Melihat perbandingan akurasi antara Model Fine-Tuned dan LLM General.</p>
+                <div class="space-y-2">
+                    <h2 class="text-2xl font-bold text-white tracking-tight">Analisis Budaya Bali Digital</h2>
+                    <p class="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed italic">Penelitian Perbandingan Relevansi Model DeepSeek, Qwen (Fine-Tuned), dan Gemini.</p>
+                </div>
             </div>
         </div>
 
@@ -104,8 +113,10 @@
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
         const lockOverlay = document.getElementById('lock-overlay');
+        
+        // Session ID Panjang (Standard UUID v4)
         const sessionID = self.crypto.randomUUID();
-        document.getElementById('session-display').innerText = sessionID.substring(0,8);
+        document.getElementById('session-display').innerText = sessionID;
 
         const CHAT_WEBHOOK = "https://n8n.arcomteknologi.co.id/webhook/85e0e8c6-24d2-4aea-8a02-a3b4a6e2fd3f";
         const EVAL_WEBHOOK = "https://n8n.arcomteknologi.co.id/webhook/2bb1602a-80df-4b56-bc91-2da15b3c4267";
@@ -191,7 +202,8 @@
                 
                 if (result.success === "true" || result.success === true) {
                     // Lock Evaluasi agar tidak bisa diubah
-                    document.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
+                    const lastMessageArea = chatBox.lastElementChild;
+                    lastMessageArea.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
                     document.getElementById('submit-area').innerHTML = `<p class="text-green-500 font-bold uppercase text-[10px] tracking-widest"><i class="fa-solid fa-circle-check mr-2"></i>Data Evaluasi Terkunci & Tersimpan</p>`;
                     
                     showToast("Evaluasi berhasil dikirim. Input dibuka kembali.", "success");
@@ -310,7 +322,7 @@
         }
 
         sendBtn.addEventListener('click', sendMessage);
-        lockOverlay.addEventListener('click', () => showToast("Anda wajib mengisi prosedur relevansi (1/0) dan kepuasan pengguna!"));
+        lockOverlay.addEventListener('click', () => showToast("Selesaikan penilaian Guttman & Kepuasan sebelum lanjut."));
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
         userInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
     </script>
