@@ -13,10 +13,12 @@
         body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; scroll-behavior: smooth; }
         .chat-container { height: calc(100vh - 200px); }
         
+        /* Markdown Styling */
         .markdown-body ul { list-style-type: disc; margin-left: 1.25rem; margin-bottom: 1rem; }
         .markdown-body p { margin-bottom: 0.75rem; line-height: 1.6; }
         .markdown-body strong { color: #fb923c; font-weight: 600; }
         
+        /* Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
@@ -42,17 +44,30 @@
             100% { background-position: -200% 0; }
         }
 
+        /* Toast & Animations */
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
         .toast { animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
         button:disabled, input[type="range"]:disabled { cursor: not-allowed; opacity: 0.6; }
 
-        /* Logo Glow Effect */
+        /* Logo Glow */
         .logo-glow {
-            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
-            filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.3));
+            text-shadow: 0 0 25px rgba(249, 115, 22, 0.6);
+            filter: drop-shadow(0 0 15px rgba(249, 115, 22, 0.4));
         }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-loading { background-color: #9a3412 !important; cursor: wait !important; pointer-events: none; }
     </style>
 </head>
 <body class="text-gray-200">
@@ -70,37 +85,37 @@
                     <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">BPK Wilayah XV - Multi-Agent System</p>
                 </div>
             </div>
-            <div class="hidden md:block text-[10px] text-gray-500 font-mono bg-white/5 px-3 py-1 rounded-md border border-white/10">
-                SID: <span id="session-display" class="text-orange-400"></span>
+            <div class="hidden md:block text-[10px] text-gray-400 font-mono bg-white/5 px-3 py-1.5 rounded-md border border-white/10">
+                SESSION ID: <span id="session-display" class="text-orange-400 font-bold"></span>
             </div>
         </header>
 
         <div id="chat-box" class="chat-container overflow-y-auto p-4 md:px-8 lg:px-12 space-y-12 pb-32">
             <div id="welcome" class="flex flex-col items-center justify-center h-full text-center space-y-6">
-                <div class="p-8 bg-orange-500/5 rounded-full border border-orange-500/10 shadow-[0_0_50px_rgba(249,115,22,0.1)]">
-                    <i class="fa-solid fa-microchip text-6xl text-orange-500 logo-glow"></i>
+                <div class="p-10 bg-orange-500/5 rounded-full border border-orange-500/10 shadow-[0_0_60px_rgba(249,115,22,0.1)]">
+                    <i class="fa-solid fa-microchip text-7xl text-orange-500 logo-glow"></i>
                 </div>
-                <div class="space-y-2">
+                <div class="space-y-3">
                     <h2 class="text-2xl font-bold text-white tracking-tight">Analisis Budaya Bali Digital</h2>
-                    <p class="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed italic">Penelitian Perbandingan Relevansi Model DeepSeek, Qwen (Fine-Tuned), dan Gemini.</p>
+                    <p class="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed italic">Penelitian Perbandingan Relevansi Model DeepSeek R1, Qwen 4B (Fine-Tuned), dan Gemini 1.5 Pro.</p>
                 </div>
             </div>
         </div>
 
         <div class="p-6 bg-[#0f0f0f] border-t border-white/10 relative">
-            <div id="lock-overlay" class="hidden absolute inset-0 z-10 bg-black/60 backdrop-blur-[2px] cursor-not-allowed flex items-center justify-center">
-                <span class="text-orange-500 font-bold text-xs uppercase tracking-[0.2em] bg-black/90 px-6 py-3 rounded-full border border-orange-500/40 shadow-2xl">
-                    <i class="fa-solid fa-lock mr-2"></i>Selesaikan Prosedur Evaluasi Diatas
+            <div id="lock-overlay" class="hidden absolute inset-0 z-10 bg-black/70 backdrop-blur-[3px] cursor-not-allowed flex items-center justify-center">
+                <span class="text-orange-500 font-bold text-xs uppercase tracking-[0.2em] bg-black/90 px-8 py-3 rounded-full border border-orange-500/40 shadow-2xl flex items-center gap-3">
+                    <i class="fa-solid fa-lock"></i> Selesaikan Prosedur Evaluasi Diatas
                 </span>
             </div>
 
             <div class="max-w-5xl mx-auto">
-                <div class="relative flex items-end gap-3 bg-[#1a1a1a] rounded-2xl p-2 border border-white/10 focus-within:border-orange-500/50 transition-all">
+                <div class="relative flex items-end gap-3 bg-[#1a1a1a] rounded-2xl p-2 border border-white/10 focus-within:border-orange-500/50 transition-all shadow-2xl">
                     <textarea id="user-input" rows="1" 
                         class="w-full bg-transparent text-white py-3 px-4 focus:outline-none resize-none max-h-40"
                         placeholder="Masukkan pertanyaan penelitian budaya..."></textarea>
                     
-                    <button id="send-btn" class="bg-orange-600 text-white p-3.5 rounded-xl hover:bg-orange-500 transition-all shadow-lg">
+                    <button id="send-btn" class="bg-orange-600 text-white p-3.5 rounded-xl hover:bg-orange-500 transition-all shadow-lg active:scale-95">
                         <i class="fa-solid fa-paper-plane px-1"></i>
                     </button>
                 </div>
@@ -114,7 +129,7 @@
         const sendBtn = document.getElementById('send-btn');
         const lockOverlay = document.getElementById('lock-overlay');
         
-        // Session ID Panjang (Standard UUID v4)
+        // Session ID Full UUID v4
         const sessionID = self.crypto.randomUUID();
         document.getElementById('session-display').innerText = sessionID;
 
@@ -135,7 +150,7 @@
         function showToast(msg, type = "error") {
             const toast = document.createElement('div');
             const bg = type === "error" ? "bg-red-600" : "bg-green-600";
-            toast.className = `toast ${bg} text-white px-6 py-3 rounded-xl shadow-2xl mb-3 flex items-center gap-3 border border-white/10`;
+            toast.className = `toast ${bg} text-white px-6 py-3 rounded-xl shadow-2xl mb-3 flex items-center gap-3 border border-white/20`;
             toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-check-circle'}"></i> <span class="text-sm font-bold">${msg}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
@@ -149,7 +164,7 @@
         function setRelevance(agent, value, btnElement) {
             currentEvalData[agent] = value;
             const parent = btnElement.parentElement;
-            parent.querySelectorAll('button').forEach(b => b.className = "flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all");
+            parent.querySelectorAll('button').forEach(b => b.className = "flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all text-gray-400");
             btnElement.className = "flex-1 bg-orange-600 text-white text-[10px] font-bold py-2 rounded-lg shadow-lg border border-orange-400/50 transition-all";
             checkProgress();
         }
@@ -163,6 +178,13 @@
         }
 
         async function submitEvaluation() {
+            const submitBtn = document.querySelector('#submit-area button');
+            const originalContent = submitBtn.innerHTML;
+
+            // Loading State
+            submitBtn.classList.add('btn-loading');
+            submitBtn.innerHTML = `<div class="flex items-center gap-3 justify-center"><div class="spinner"></div><span>SEDANG MENYIMPAN KE DATABASE...</span></div>`;
+
             const duration = Date.now() - currentEvalData.startTime;
             const totalWords = Object.values(currentEvalData.raw).join(" ").split(/\s+/).length;
 
@@ -201,22 +223,29 @@
                 const result = await res.json();
                 
                 if (result.success === "true" || result.success === true) {
-                    // Lock Evaluasi agar tidak bisa diubah
-                    const lastMessageArea = chatBox.lastElementChild;
-                    lastMessageArea.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
-                    document.getElementById('submit-area').innerHTML = `<p class="text-green-500 font-bold uppercase text-[10px] tracking-widest"><i class="fa-solid fa-circle-check mr-2"></i>Data Evaluasi Terkunci & Tersimpan</p>`;
+                    const lastMsg = chatBox.lastElementChild;
+                    lastMsg.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
                     
-                    showToast("Evaluasi berhasil dikirim. Input dibuka kembali.", "success");
+                    document.getElementById('submit-area').innerHTML = `
+                        <div class="animate-bounce text-green-500 font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                            <span>Data Evaluasi Terkunci & Tersimpan</span>
+                        </div>
+                    `;
+                    
+                    showToast("Evaluasi berhasil disimpan!", "success");
                     toggleLock(false);
-                }
+                } else { throw new Error(); }
             } catch (e) {
-                showToast("Koneksi Database Gagal!");
+                showToast("Gagal terhubung ke database!");
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.innerHTML = originalContent;
             }
         }
 
         function createSkeletonCard(title, icon, colorClass) {
             return `
-                <div class="card-answer p-6 rounded-3xl flex flex-col h-full shadow-lg">
+                <div class="card-answer p-6 rounded-3xl flex flex-col h-full shadow-lg border border-white/5">
                     <div class="flex items-center gap-3 mb-5">
                         <i class="fa-solid ${icon} ${colorClass}"></i>
                         <h3 class="font-bold text-xs uppercase tracking-widest ${colorClass}">${title}</h3>
@@ -258,7 +287,7 @@
             sections.forEach(sec => {
                 const el = document.createElement('div');
                 el.className = `card-answer p-6 rounded-3xl flex flex-col h-full border ${sec.border}`;
-                const md = (sec.content || "Null").replace(/\\n/g, '\n');
+                const md = (sec.content || "Data tidak ditemukan.").replace(/\\n/g, '\n');
                 el.innerHTML = `
                     <div class="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
                         <i class="fa-solid ${sec.icon} ${sec.color}"></i>
@@ -278,16 +307,18 @@
 
             const satArea = document.createElement('div');
             satArea.id = "satisfaction-area";
-            satArea.className = "hidden col-span-full bg-white/5 border border-white/10 p-8 rounded-[40px] text-center space-y-6 mt-4 max-w-2xl mx-auto w-full";
+            satArea.className = "hidden col-span-full bg-white/5 border border-white/10 p-8 rounded-[40px] text-center space-y-6 mt-4 max-w-2xl mx-auto w-full shadow-2xl animate-fade-in";
             satArea.innerHTML = `
                 <div class="space-y-1">
                     <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-orange-500 italic">User Satisfaction Level</h4>
-                    <p class="text-[10px] text-gray-500">Geser slider untuk menentukan tingkat kepuasan terhadap sistem Multi-Agent</p>
+                    <p class="text-[10px] text-gray-500">Geser slider untuk menentukan tingkat kepuasan terhadap respons sistem.</p>
                 </div>
                 <input type="range" min="0" max="5" step="1" value="0" id="sat-slider" class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-orange-600">
-                <div class="flex justify-between text-[9px] font-bold text-gray-600 uppercase px-2"><span>Buruk</span><span>Biasa</span><span>Sangat Puas</span></div>
+                <div class="flex justify-between text-[9px] font-bold text-gray-600 uppercase px-2"><span>Buruk</span><span>Biasa saja</span><span>Sangat Puas</span></div>
                 <div id="submit-area" class="hidden pt-4 animate-fade-in">
-                    <button onclick="submitEvaluation()" class="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-10 py-4 rounded-2xl shadow-2xl transition-all">SIMPAN DATA EVALUASI & LANJUTKAN</button>
+                    <button onclick="submitEvaluation()" class="w-full bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-10 py-4 rounded-2xl shadow-2xl transition-all uppercase tracking-widest">
+                        SIMPAN DATA EVALUASI & LANJUTKAN
+                    </button>
                 </div>
             `;
             container.parentElement.appendChild(satArea);
@@ -317,12 +348,13 @@
                 currentEvalData.raw = data;
                 updateAIUI(container, data);
             } catch (e) {
-                showToast("Workflow n8n sedang sibuk atau offline.");
+                showToast("Server sedang sibuk. Silakan coba beberapa saat lagi.");
+                container.innerHTML = `<div class="col-span-full text-center text-red-500 py-10 font-bold bg-red-500/5 rounded-3xl border border-red-500/20">Koneksi n8n Terputus</div>`;
             }
         }
 
         sendBtn.addEventListener('click', sendMessage);
-        lockOverlay.addEventListener('click', () => showToast("Selesaikan penilaian Guttman & Kepuasan sebelum lanjut."));
+        lockOverlay.addEventListener('click', () => showToast("Selesaikan penilaian Guttman & Slider Kepuasan untuk membuka prompt!"));
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
         userInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
     </script>
