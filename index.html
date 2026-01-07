@@ -49,7 +49,7 @@
         .toast { animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         
-        button:disabled, input[type="range"]:disabled { cursor: not-allowed; opacity: 0.6; }
+        button:disabled, textarea:disabled { cursor: not-allowed; opacity: 0.6; }
 
         /* Logo Glow */
         .logo-glow {
@@ -121,7 +121,7 @@
                         placeholder="Masukkan pertanyaan penelitian budaya..."></textarea>
                     
                     <button id="send-btn" class="bg-orange-600 text-white p-3.5 rounded-xl hover:bg-orange-500 transition-all shadow-lg active:scale-95">
-                        <i class="fa-solid fa-paper-plane px-1"></i>
+                        <span id="btn-icon"><i class="fa-solid fa-paper-plane px-1"></i></span>
                     </button>
                 </div>
             </div>
@@ -132,9 +132,9 @@
         const chatBox = document.getElementById('chat-box');
         const userInput = document.getElementById('user-input');
         const sendBtn = document.getElementById('send-btn');
+        const btnIcon = document.getElementById('btn-icon');
         const lockOverlay = document.getElementById('lock-overlay');
         
-        // Session ID Full UUID v4
         const sessionID = self.crypto.randomUUID();
         document.getElementById('session-display').innerText = sessionID;
 
@@ -164,6 +164,21 @@
         function toggleLock(isLocked) {
             lockOverlay.classList.toggle('hidden', !isLocked);
             userInput.disabled = isLocked;
+            sendBtn.disabled = isLocked;
+        }
+
+        function setPromptLoading(isLoading) {
+            if (isLoading) {
+                userInput.disabled = true;
+                sendBtn.disabled = true;
+                sendBtn.classList.add('btn-loading');
+                btnIcon.innerHTML = `<div class="spinner"></div>`;
+            } else {
+                userInput.disabled = false;
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('btn-loading');
+                btnIcon.innerHTML = `<i class="fa-solid fa-paper-plane px-1"></i>`;
+            }
         }
 
         function setRelevance(agent, value, btnElement) {
@@ -186,7 +201,6 @@
             const submitBtn = document.querySelector('#submit-area button');
             const originalContent = submitBtn.innerHTML;
 
-            // Loading State
             submitBtn.classList.add('btn-loading');
             submitBtn.innerHTML = `<div class="flex items-center gap-3 justify-center"><div class="spinner"></div><span>SEDANG MENYIMPAN KE DATABASE...</span></div>`;
 
@@ -337,11 +351,14 @@
             const message = userInput.value.trim();
             if (!message) return;
 
+            // Start Loading State
+            setPromptLoading(true);
+
             currentEvalData = { user_query: message, deepseek: null, finetuned: null, gemini: null, conclusion: null, satisfaction: 0, raw: {}, startTime: Date.now() };
+            
+            const container = createMessageUI(message);
             userInput.value = '';
             userInput.style.height = 'auto';
-
-            const container = createMessageUI(message);
 
             try {
                 const res = await fetch(CHAT_WEBHOOK, {
@@ -351,8 +368,12 @@
                 });
                 const data = await res.json();
                 currentEvalData.raw = data;
+                
+                // End Loading State
+                setPromptLoading(false);
                 updateAIUI(container, data);
             } catch (e) {
+                setPromptLoading(false);
                 showToast("Server sedang sibuk. Silakan coba beberapa saat lagi.");
                 container.innerHTML = `<div class="col-span-full text-center text-red-500 py-10 font-bold bg-red-500/5 rounded-3xl border border-red-500/20">Koneksi n8n Terputus</div>`;
             }
