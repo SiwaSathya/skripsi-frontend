@@ -68,6 +68,9 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
         .btn-loading { background-color: #9a3412 !important; cursor: wait !important; pointer-events: none; }
+        
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="text-gray-200">
@@ -193,8 +196,11 @@
             const isGuttmanDone = currentEvalData.deepseek !== null && currentEvalData.finetuned !== null && 
                                  currentEvalData.gemini !== null && currentEvalData.conclusion !== null;
             
-            if (isGuttmanDone) document.getElementById('satisfaction-area')?.classList.remove('hidden');
-            if (isGuttmanDone && currentEvalData.satisfaction > 0) document.getElementById('submit-area')?.classList.remove('hidden');
+            const satArea = document.getElementById('satisfaction-area');
+            const subArea = document.getElementById('submit-area');
+
+            if (isGuttmanDone && satArea) satArea.classList.remove('hidden');
+            if (isGuttmanDone && currentEvalData.satisfaction > 0 && subArea) subArea.classList.remove('hidden');
         }
 
         async function submitEvaluation() {
@@ -242,8 +248,8 @@
                 const result = await res.json();
                 
                 if (result.success === "true" || result.success === true) {
-                    const lastMsg = chatBox.lastElementChild;
-                    lastMsg.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
+                    const lastMsgGrid = chatBox.lastElementChild;
+                    lastMsgGrid.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
                     
                     document.getElementById('submit-area').innerHTML = `
                         <div class="animate-bounce text-green-500 font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
@@ -281,6 +287,7 @@
             wrap.innerHTML = `<div class="flex justify-end"><div class="bg-orange-600/10 border border-orange-600/30 text-orange-100 px-6 py-3 rounded-2xl rounded-tr-none shadow-xl max-w-2xl"><p class="text-sm font-medium">${userText}</p></div></div>`;
             
             const grid = document.createElement('div');
+            grid.id = "latest-grid"; // ID sementara untuk identifikasi target update
             grid.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
             grid.innerHTML = `
                 ${createSkeletonCard("DeepSeek R1", "fa-brain", "text-rose-400")}
@@ -324,6 +331,10 @@
                 container.appendChild(el);
             });
 
+            // Hapus satisfaction area lama jika ada
+            const oldSatArea = document.getElementById('satisfaction-area');
+            if (oldSatArea) oldSatArea.remove();
+
             const satArea = document.createElement('div');
             satArea.id = "satisfaction-area";
             satArea.className = "hidden col-span-full bg-white/5 border border-white/10 p-8 rounded-[40px] text-center space-y-6 mt-4 max-w-2xl mx-auto w-full shadow-2xl animate-fade-in";
@@ -340,10 +351,18 @@
                     </button>
                 </div>
             `;
-            container.parentElement.appendChild(satArea);
-            document.getElementById('sat-slider').addEventListener('input', (e) => { currentEvalData.satisfaction = parseInt(e.target.value); checkProgress(); });
+            
+            // Masukkan area kepuasan di bawah grid jawaban terbaru
+            container.after(satArea);
+
+            // Re-bind listener untuk slider baru
+            document.getElementById('sat-slider').addEventListener('input', (e) => { 
+                currentEvalData.satisfaction = parseInt(e.target.value); 
+                checkProgress(); 
+            });
             
             toggleLock(true);
+            chatBox.scrollTop = chatBox.scrollHeight;
         }
 
         async function sendMessage() {
@@ -351,7 +370,6 @@
             const message = userInput.value.trim();
             if (!message) return;
 
-            // Start Loading State
             setPromptLoading(true);
 
             currentEvalData = { user_query: message, deepseek: null, finetuned: null, gemini: null, conclusion: null, satisfaction: 0, raw: {}, startTime: Date.now() };
@@ -369,7 +387,6 @@
                 const data = await res.json();
                 currentEvalData.raw = data;
                 
-                // End Loading State
                 setPromptLoading(false);
                 updateAIUI(container, data);
             } catch (e) {
