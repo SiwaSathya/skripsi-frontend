@@ -45,6 +45,9 @@
         #toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
         .toast { animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        
+        /* Cursor for disabled elements */
+        button:disabled, input[type="range"]:disabled { cursor: not-allowed; opacity: 0.8; }
     </style>
 </head>
 <body class="text-gray-200">
@@ -59,10 +62,10 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg leading-none text-white tracking-tight">BaliAI <span class="text-orange-500 italic text-sm ml-1">Research Mode</span></h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Guttman Scale Evaluator</p>
+                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">BPK Wilayah XV - Multi-Agent System</p>
                 </div>
             </div>
-            <div class="hidden md:block text-xs text-gray-500 font-mono">Session ID: <span id="session-display" class="text-orange-500/80 tracking-tighter"></span></div>
+            <div class="hidden md:block text-xs text-gray-500 font-mono">Session ID: <span id="session-display" class="text-orange-500/80"></span></div>
         </header>
 
         <div id="chat-box" class="chat-container overflow-y-auto p-4 md:px-8 lg:px-12 space-y-12 pb-32">
@@ -70,15 +73,15 @@
                 <div class="p-6 bg-white/5 rounded-3xl border border-white/5 animate-pulse">
                     <i class="fa-solid fa-vial-circle-check text-5xl text-gray-700"></i>
                 </div>
-                <h2 class="text-2xl font-bold text-white tracking-tight">Dashboard Evaluasi Multi-Agent</h2>
-                <p class="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed">Sistem akan mengunci input hingga Anda memberikan penilaian relevansi pada setiap agen jawaban.</p>
+                <h2 class="text-2xl font-bold text-white tracking-tight">Analisis Budaya Bali Digital</h2>
+                <p class="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed italic">Melihat perbandingan akurasi antara Model Fine-Tuned dan LLM General.</p>
             </div>
         </div>
 
         <div class="p-6 bg-[#0f0f0f] border-t border-white/10 relative">
             <div id="lock-overlay" class="hidden absolute inset-0 z-10 bg-black/60 backdrop-blur-[2px] cursor-not-allowed flex items-center justify-center">
                 <span class="text-orange-500 font-bold text-xs uppercase tracking-[0.2em] bg-black/90 px-6 py-3 rounded-full border border-orange-500/40 shadow-2xl">
-                    <i class="fa-solid fa-lock mr-2"></i>Selesaikan Prosedur Evaluasi
+                    <i class="fa-solid fa-lock mr-2"></i>Selesaikan Prosedur Evaluasi Diatas
                 </span>
             </div>
 
@@ -86,10 +89,10 @@
                 <div class="relative flex items-end gap-3 bg-[#1a1a1a] rounded-2xl p-2 border border-white/10 focus-within:border-orange-500/50 transition-all">
                     <textarea id="user-input" rows="1" 
                         class="w-full bg-transparent text-white py-3 px-4 focus:outline-none resize-none max-h-40"
-                        placeholder="Masukkan pertanyaan penelitian..."></textarea>
+                        placeholder="Masukkan pertanyaan penelitian budaya..."></textarea>
                     
                     <button id="send-btn" class="bg-orange-600 text-white p-3.5 rounded-xl hover:bg-orange-500 transition-all shadow-lg">
-                        <i class="fa-solid fa-paper-plane"></i>
+                        <i class="fa-solid fa-paper-plane px-1"></i>
                     </button>
                 </div>
             </div>
@@ -102,9 +105,8 @@
         const sendBtn = document.getElementById('send-btn');
         const lockOverlay = document.getElementById('lock-overlay');
         const sessionID = self.crypto.randomUUID();
-        document.getElementById('session-display').innerText = sessionID;
+        document.getElementById('session-display').innerText = sessionID.substring(0,8);
 
-        // Configuration
         const CHAT_WEBHOOK = "https://n8n.arcomteknologi.co.id/webhook/85e0e8c6-24d2-4aea-8a02-a3b4a6e2fd3f";
         const EVAL_WEBHOOK = "https://n8n.arcomteknologi.co.id/webhook/2bb1602a-80df-4b56-bc91-2da15b3c4267";
 
@@ -138,7 +140,6 @@
             const parent = btnElement.parentElement;
             parent.querySelectorAll('button').forEach(b => b.className = "flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all");
             btnElement.className = "flex-1 bg-orange-600 text-white text-[10px] font-bold py-2 rounded-lg shadow-lg border border-orange-400/50 transition-all";
-            
             checkProgress();
         }
 
@@ -146,14 +147,8 @@
             const isGuttmanDone = currentEvalData.deepseek !== null && currentEvalData.finetuned !== null && 
                                  currentEvalData.gemini !== null && currentEvalData.conclusion !== null;
             
-            if (isGuttmanDone) {
-                document.getElementById('satisfaction-area').classList.remove('hidden');
-                chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: 'smooth' });
-            }
-
-            if (isGuttmanDone && currentEvalData.satisfaction > 0) {
-                document.getElementById('submit-area').classList.remove('hidden');
-            }
+            if (isGuttmanDone) document.getElementById('satisfaction-area')?.classList.remove('hidden');
+            if (isGuttmanDone && currentEvalData.satisfaction > 0) document.getElementById('submit-area')?.classList.remove('hidden');
         }
 
         async function submitEvaluation() {
@@ -193,34 +188,45 @@
                     body: JSON.stringify(payload)
                 });
                 const result = await res.json();
+                
                 if (result.success === "true" || result.success === true) {
-                    showToast("Evaluasi berhasil disimpan!", "success");
-                    document.getElementById('submit-area').innerHTML = `<p class="text-green-500 font-bold uppercase text-[10px] tracking-widest"><i class="fa-solid fa-database mr-2"></i>Data Berhasil Masuk Database</p>`;
+                    // Lock Evaluasi agar tidak bisa diubah
+                    document.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
+                    document.getElementById('submit-area').innerHTML = `<p class="text-green-500 font-bold uppercase text-[10px] tracking-widest"><i class="fa-solid fa-circle-check mr-2"></i>Data Evaluasi Terkunci & Tersimpan</p>`;
+                    
+                    showToast("Evaluasi berhasil dikirim. Input dibuka kembali.", "success");
                     toggleLock(false);
                 }
             } catch (e) {
-                showToast("Gagal menyimpan data ke PostgreSQL.");
+                showToast("Koneksi Database Gagal!");
             }
+        }
+
+        function createSkeletonCard(title, icon, colorClass) {
+            return `
+                <div class="card-answer p-6 rounded-3xl flex flex-col h-full shadow-lg">
+                    <div class="flex items-center gap-3 mb-5">
+                        <i class="fa-solid ${icon} ${colorClass}"></i>
+                        <h3 class="font-bold text-xs uppercase tracking-widest ${colorClass}">${title}</h3>
+                    </div>
+                    <div class="space-y-4"><div class="skeleton h-3 w-full"></div><div class="skeleton h-3 w-4/6"></div></div>
+                </div>
+            `;
         }
 
         function createMessageUI(userText) {
             document.getElementById('welcome').classList.add('hidden');
             const wrap = document.createElement('div');
             wrap.className = "animate-fade-in space-y-8";
-            wrap.innerHTML = `<div class="flex justify-end"><div class="bg-gradient-to-br from-orange-600 to-orange-700 text-white px-6 py-3 rounded-2xl rounded-tr-none shadow-xl border border-white/10 max-w-2xl"><p class="text-sm font-medium">${userText}</p></div></div>`;
+            wrap.innerHTML = `<div class="flex justify-end"><div class="bg-orange-600/10 border border-orange-600/30 text-orange-100 px-6 py-3 rounded-2xl rounded-tr-none shadow-xl max-w-2xl"><p class="text-sm font-medium">${userText}</p></div></div>`;
             
             const grid = document.createElement('div');
             grid.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
             grid.innerHTML = `
-                ${['DeepSeek R1', 'Fine-Tuned Model', 'Gemini Enhancer', 'Final Conclusion'].map((t, i) => `
-                    <div class="card-answer p-6 rounded-3xl flex flex-col h-full shadow-lg">
-                        <div class="flex items-center gap-3 mb-5">
-                            <div class="skeleton w-4 h-4 rounded-full"></div>
-                            <h3 class="font-bold text-[10px] uppercase tracking-widest text-gray-500">${t}</h3>
-                        </div>
-                        <div class="space-y-3"><div class="skeleton h-3 w-full"></div><div class="skeleton h-3 w-5/6"></div></div>
-                    </div>
-                `).join('')}
+                ${createSkeletonCard("DeepSeek R1", "fa-brain", "text-rose-400")}
+                ${createSkeletonCard("Fine-Tuned Model", "fa-microchip", "text-blue-400")}
+                ${createSkeletonCard("Gemini Enhancer", "fa-wand-magic-sparkles", "text-purple-400")}
+                ${createSkeletonCard("Final Conclusion", "fa-check-double", "text-green-400")}
             `;
             wrap.appendChild(grid);
             chatBox.appendChild(wrap);
@@ -230,7 +236,7 @@
 
         function updateAIUI(container, data) {
             const sections = [
-                { id: 'deepseek', content: data.deepseek, icon: 'fa-brain', color: 'text-rose-400', title: 'DeepSeek R1', border: 'border-rose-500/10' },
+                { id: 'deepseek', content: data.deepseek, icon: 'fa-brain', color: 'text-rose-400', title: 'DeepSeek R1 (Reasoning)', border: 'border-rose-500/10' },
                 { id: 'finetuned', content: data.fine_tuned, icon: 'fa-microchip', color: 'text-blue-400', title: 'Fine-Tuned Model', border: 'border-blue-500/10' },
                 { id: 'gemini', content: data.gemini, icon: 'fa-wand-magic-sparkles', color: 'text-purple-400', title: 'Gemini Enhancer', border: 'border-purple-500/10' },
                 { id: 'conclusion', content: data.conclusion, icon: 'fa-check-double', color: 'text-green-400', title: 'Final Conclusion', border: 'border-green-500/10' }
@@ -247,42 +253,33 @@
                         <h3 class="font-bold text-[10px] uppercase tracking-widest ${sec.color}">${sec.title}</h3>
                     </div>
                     <div class="content-scroll text-gray-300 text-sm markdown-body mb-6">${marked.parse(md)}</div>
-                    <div class="mt-auto pt-4 border-t border-white/5">
-                        <p class="text-[8px] text-gray-500 uppercase tracking-widest mb-3 text-center">Evaluasi Relevansi (Guttman)</p>
+                    <div class="mt-auto pt-4 border-t border-white/5 btn-group">
+                        <p class="text-[8px] text-gray-500 uppercase tracking-widest mb-3 text-center">Apakah Informasi Relevan? (Guttman)</p>
                         <div class="flex gap-2">
-                            <button onclick="setRelevance('${sec.id}', 1, this)" class="flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5">RELEVAN</button>
-                            <button onclick="setRelevance('${sec.id}', 0, this)" class="flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5">TIDAK</button>
+                            <button onclick="setRelevance('${sec.id}', 1, this)" class="flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all">RELEVAN</button>
+                            <button onclick="setRelevance('${sec.id}', 0, this)" class="flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all">TIDAK</button>
                         </div>
                     </div>
                 `;
                 container.appendChild(el);
             });
 
-            // Append Satisfaction Slider
-            const sat = document.createElement('div');
-            sat.id = "satisfaction-area";
-            sat.className = "hidden col-span-full bg-white/5 border border-white/10 p-8 rounded-[40px] text-center space-y-6 mt-4 max-w-2xl mx-auto w-full";
-            sat.innerHTML = `
+            const satArea = document.createElement('div');
+            satArea.id = "satisfaction-area";
+            satArea.className = "hidden col-span-full bg-white/5 border border-white/10 p-8 rounded-[40px] text-center space-y-6 mt-4 max-w-2xl mx-auto w-full";
+            satArea.innerHTML = `
                 <div class="space-y-1">
                     <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-orange-500 italic">User Satisfaction Level</h4>
-                    <p class="text-[10px] text-gray-500">Geser slider untuk menentukan tingkat kepuasan Anda terhadap sistem Multi-Agent</p>
+                    <p class="text-[10px] text-gray-500">Geser slider untuk menentukan tingkat kepuasan terhadap sistem Multi-Agent</p>
                 </div>
                 <input type="range" min="0" max="5" step="1" value="0" id="sat-slider" class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-orange-600">
-                <div class="flex justify-between text-[9px] font-bold text-gray-600 uppercase px-2">
-                    <span>Buruk</span><span>Biasa</span><span>Sangat Puas</span>
-                </div>
+                <div class="flex justify-between text-[9px] font-bold text-gray-600 uppercase px-2"><span>Buruk</span><span>Biasa</span><span>Sangat Puas</span></div>
                 <div id="submit-area" class="hidden pt-4 animate-fade-in">
-                    <button onclick="submitEvaluation()" class="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-10 py-4 rounded-2xl shadow-2xl transition-all">
-                        SIMPAN DATA EVALUASI & UNLOCK PROMPT
-                    </button>
+                    <button onclick="submitEvaluation()" class="bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-10 py-4 rounded-2xl shadow-2xl transition-all">SIMPAN DATA EVALUASI & LANJUTKAN</button>
                 </div>
             `;
-            container.parentElement.appendChild(sat);
-
-            document.getElementById('sat-slider').addEventListener('input', (e) => {
-                currentEvalData.satisfaction = parseInt(e.target.value);
-                checkProgress();
-            });
+            container.parentElement.appendChild(satArea);
+            document.getElementById('sat-slider').addEventListener('input', (e) => { currentEvalData.satisfaction = parseInt(e.target.value); checkProgress(); });
             
             toggleLock(true);
         }
@@ -292,7 +289,6 @@
             const message = userInput.value.trim();
             if (!message) return;
 
-            // Setup Data
             currentEvalData = { user_query: message, deepseek: null, finetuned: null, gemini: null, conclusion: null, satisfaction: 0, raw: {}, startTime: Date.now() };
             userInput.value = '';
             userInput.style.height = 'auto';
@@ -309,12 +305,12 @@
                 currentEvalData.raw = data;
                 updateAIUI(container, data);
             } catch (e) {
-                showToast("Server Multi-Agent tidak merespon.");
+                showToast("Workflow n8n sedang sibuk atau offline.");
             }
         }
 
         sendBtn.addEventListener('click', sendMessage);
-        lockOverlay.addEventListener('click', () => showToast("Selesaikan penilaian Guttman & Kepuasan sebelum lanjut."));
+        lockOverlay.addEventListener('click', () => showToast("Anda wajib mengisi prosedur relevansi (1/0) dan kepuasan pengguna!"));
         userInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
         userInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
     </script>
