@@ -10,30 +10,30 @@
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; scroll-behavior: smooth; }
         .chat-container { height: calc(100vh - 200px); }
         
-        /* Markdown Styling */
+        /* Markdown Styling Tridatu Theme */
         .markdown-body ul { list-style-type: disc; margin-left: 1.25rem; margin-bottom: 1rem; }
         .markdown-body p { margin-bottom: 0.75rem; line-height: 1.6; }
-        .markdown-body strong { color: #fb923c; font-weight: 600; }
+        .markdown-body strong { color: #dc2626; font-weight: 600; }
         
         /* Scrollbar */
-        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
 
         .content-scroll { max-height: 300px; overflow-y: auto; padding-right: 8px; }
 
         .card-answer { 
-            border: 1px solid rgba(255,255,255,0.05); 
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(10px);
+            border: 1px solid #e5e7eb; 
+            background: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             transition: all 0.3s ease; 
         }
         
         .skeleton {
-            background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
+            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
             border-radius: 8px;
@@ -53,8 +53,8 @@
 
         /* Logo Glow */
         .logo-glow {
-            text-shadow: 0 0 25px rgba(249, 115, 22, 0.6);
-            filter: drop-shadow(0 0 15px rgba(249, 115, 22, 0.4));
+            text-shadow: 0 0 25px rgba(220, 38, 38, 0.15);
+            filter: drop-shadow(0 0 15px rgba(220, 38, 38, 0.1));
         }
 
         /* Loading Spinner */
@@ -67,66 +67,68 @@
             animation: spin 0.8s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .btn-loading { background-color: #9a3412 !important; cursor: wait !important; pointer-events: none; }
+        .btn-loading { background-color: #991b1b !important; cursor: wait !important; pointer-events: none; }
         
         .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="text-gray-200">
+<body class="text-gray-800">
 
     <div id="toast-container"></div>
 
     <div class="flex flex-col h-screen">
-        <header class="p-4 border-b border-white/10 flex justify-between items-center bg-[#141414]/80 backdrop-blur-md sticky top-0 z-50">
+        <header class="p-4 border-b border-gray-200 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-50">
             <div class="flex items-center gap-3">
-                <div class="bg-orange-600 p-2 rounded-lg shadow-lg">
+                <div class="bg-red-600 p-2 rounded-lg shadow-md">
                     <i class="fa-solid fa-om text-white text-xl"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg leading-none text-white tracking-tight">BaliAI <span class="text-orange-500 italic text-sm ml-1">Research Mode</span></h1>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-widest mt-1">BPK Wilayah XV - Multi-Agent System - Siwa Sathya</p>
+                    <h1 class="font-bold text-lg leading-none text-gray-900 tracking-tight">BaliAI <span class="text-red-600 italic text-sm ml-1">Research Mode</span></h1>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest mt-1">BPK Wilayah XV - Multi-Agent System - Siwa Sathya</p>
                 </div>
             </div>
-            <div class="hidden md:block text-[10px] text-gray-400 font-mono bg-white/5 px-3 py-1.5 rounded-md border border-white/10">
-                SESSION ID: <span id="session-display" class="text-orange-400 font-bold"></span>
+            <div class="hidden md:block text-[10px] text-gray-600 font-mono bg-gray-100 px-3 py-1.5 rounded-md border border-gray-200">
+                SESSION ID: <span id="session-display" class="text-red-600 font-bold"></span>
             </div>
             <div class="flex items-center gap-4">
-                <a href="analytics.html" class="text-[10px] font-bold uppercase tracking-widest bg-orange-600/10 text-orange-500 border border-orange-500/20 px-4 py-2 rounded-lg hover:bg-orange-600 hover:text-white transition-all">
+                <a href="analytics.html" class="text-[10px] font-bold uppercase tracking-widest bg-red-50 text-red-600 border border-red-100 px-4 py-2 rounded-lg hover:bg-red-600 hover:text-white transition-all">
                     <i class="fa-solid fa-chart-line mr-2"></i> Performance Metrics
                 </a>
             </div>
         </header>
 
         <div id="chat-box" class="chat-container overflow-y-auto p-4 md:px-8 lg:px-12 space-y-12 pb-32">
-            <div id="welcome" class="flex flex-col items-center justify-center h-full text-center space-y-6">
-                <div class="p-10 bg-orange-500/5 rounded-full border border-orange-500/10 shadow-[0_0_60px_rgba(249,115,22,0.1)]">
-                    <i class="fa-solid fa-microchip text-7xl text-orange-500 logo-glow"></i>
+            <div id="welcome" class="flex flex-col items-center justify-center h-full text-center space-y-6 pt-12">
+                <div class="p-1 rounded-full border-2 border-red-600 shadow-md bg-white overflow-hidden w-24 h-24 flex items-center justify-center">
+                    <i class="fa-solid fa-microchip text-4xl text-gray-900 logo-glow"></i>
                 </div>
-                <div class="space-y-3">
-                    <h2 class="text-2xl font-bold text-white tracking-tight">Analisis Budaya Bali Digital</h2>
-                    <p class="text-gray-500 max-w-sm mx-auto text-sm leading-relaxed italic">Penelitian Perbandingan Relevansi Model DeepSeek R1, Qwen 4B (Fine-Tuned), dan Gemini 1.5 Pro.</p>
+                <div class="space-y-2">
+                    <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Halo, saya <span class="text-red-600 font-extrabold">BaliAI</span></h2>
+                    <p class="text-gray-700 max-w-md mx-auto text-sm font-semibold">Analisis Budaya Bali Digital</p>
+                    <p class="text-gray-400 max-w-md mx-auto text-xs leading-relaxed italic">Penelitian Perbandingan Relevansi Model DeepSeek R1, Qwen 4B (Fine-Tuned), dan Gemini 1.5 Pro.</p>
                 </div>
             </div>
         </div>
 
-        <div class="p-6 bg-[#0f0f0f] border-t border-white/10 relative">
-            <div id="lock-overlay" class="hidden absolute inset-0 z-10 bg-black/70 backdrop-blur-[3px] cursor-not-allowed flex items-center justify-center">
-                <span class="text-orange-500 font-bold text-xs uppercase tracking-[0.2em] bg-black/90 px-8 py-3 rounded-full border border-orange-500/40 shadow-2xl flex items-center gap-3">
-                    <i class="fa-solid fa-lock"></i> Selesaikan Prosedur Evaluasi Diatas
+        <div class="p-6 bg-white border-t border-gray-200 relative">
+            <div id="lock-overlay" class="hidden absolute inset-0 z-10 bg-white/80 backdrop-blur-[2px] cursor-not-allowed flex items-center justify-center">
+                <span class="text-white font-bold text-xs uppercase tracking-[0.2em] bg-black px-8 py-3 rounded-full border border-gray-900 shadow-xl flex items-center gap-3">
+                    <i class="fa-solid fa-lock text-red-500"></i> Selesaikan Prosedur Evaluasi Diatas
                 </span>
             </div>
 
             <div class="max-w-5xl mx-auto">
-                <div class="relative flex items-end gap-3 bg-[#1a1a1a] rounded-2xl p-2 border border-white/10 focus-within:border-orange-500/50 transition-all shadow-2xl">
+                <div class="relative flex items-end gap-3 bg-white rounded-2xl p-2 border border-gray-300 focus-within:border-red-600 transition-all shadow-sm">
                     <textarea id="user-input" rows="1" 
-                        class="w-full bg-transparent text-white py-3 px-4 focus:outline-none resize-none max-h-40"
+                        class="w-full bg-transparent text-gray-900 py-3 px-4 focus:outline-none resize-none max-h-40 text-sm placeholder-gray-400"
                         placeholder="Masukkan pertanyaan penelitian budaya..."></textarea>
                     
-                    <button id="send-btn" class="bg-orange-600 text-white p-3.5 rounded-xl hover:bg-orange-500 transition-all shadow-lg active:scale-95">
+                    <button id="send-btn" class="bg-red-600 text-white p-3.5 rounded-xl hover:bg-red-700 transition-all shadow-md active:scale-95">
                         <span id="btn-icon"><i class="fa-solid fa-paper-plane px-1"></i></span>
                     </button>
                 </div>
+                <p class="text-center text-[10px] text-gray-400 mt-3">BaliAI dapat membuat kesalahan. Informasi berdasarkan basis data kebudayaan BPK Wilayah XV. Version 0.8 Beta</p>
             </div>
         </div>
     </div>
@@ -157,9 +159,9 @@
 
         function showToast(msg, type = "error") {
             const toast = document.createElement('div');
-            const bg = type === "error" ? "bg-red-600" : "bg-green-600";
-            toast.className = `toast ${bg} text-white px-6 py-3 rounded-xl shadow-2xl mb-3 flex items-center gap-3 border border-white/20`;
-            toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-check-circle'}"></i> <span class="text-sm font-bold">${msg}</span>`;
+            const bg = type === "error" ? "bg-red-600" : "bg-black";
+            toast.className = `toast ${bg} text-white px-6 py-3 rounded-xl shadow-2xl mb-3 flex items-center gap-3 border border-white/10`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-check-circle' ${type === 'success' ? 'text-green-400' : ''}}"></i> <span class="text-sm font-bold">${msg}</span>`;
             document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
         }
@@ -187,8 +189,13 @@
         function setRelevance(agent, value, btnElement) {
             currentEvalData[agent] = value;
             const parent = btnElement.parentElement;
-            parent.querySelectorAll('button').forEach(b => b.className = "flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all text-gray-400");
-            btnElement.className = "flex-1 bg-orange-600 text-white text-[10px] font-bold py-2 rounded-lg shadow-lg border border-orange-400/50 transition-all";
+            parent.querySelectorAll('button').forEach(b => b.className = "flex-1 bg-gray-50 text-gray-500 text-[10px] font-bold py-2 rounded-lg border border-gray-200 transition-all hover:bg-gray-100");
+            
+            if (value === 1) {
+                btnElement.className = "flex-1 bg-red-600 text-white text-[10px] font-bold py-2 rounded-lg shadow-md border border-red-600 transition-all";
+            } else {
+                btnElement.className = "flex-1 bg-black text-white text-[10px] font-bold py-2 rounded-lg shadow-md border border-black transition-all";
+            }
             checkProgress();
         }
 
@@ -252,8 +259,8 @@
                     lastMsgGrid.querySelectorAll('.btn-group button, #sat-slider').forEach(el => el.disabled = true);
                     
                     document.getElementById('submit-area').innerHTML = `
-                        <div class="animate-bounce text-green-500 font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-circle-check text-lg"></i>
+                        <div class="animate-bounce text-red-600 font-bold uppercase text-[10px] tracking-widest flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-circle-check text-lg text-green-500"></i>
                             <span>Data Evaluasi Terkunci & Tersimpan</span>
                         </div>
                     `;
@@ -270,7 +277,7 @@
 
         function createSkeletonCard(title, icon, colorClass) {
             return `
-                <div class="card-answer p-6 rounded-3xl flex flex-col h-full shadow-lg border border-white/5">
+                <div class="card-answer p-6 rounded-3xl flex flex-col h-full shadow-sm border border-gray-200 bg-white">
                     <div class="flex items-center gap-3 mb-5">
                         <i class="fa-solid ${icon} ${colorClass}"></i>
                         <h3 class="font-bold text-xs uppercase tracking-widest ${colorClass}">${title}</h3>
@@ -284,16 +291,16 @@
             document.getElementById('welcome').classList.add('hidden');
             const wrap = document.createElement('div');
             wrap.className = "animate-fade-in space-y-8";
-            wrap.innerHTML = `<div class="flex justify-end"><div class="bg-orange-600/10 border border-orange-600/30 text-orange-100 px-6 py-3 rounded-2xl rounded-tr-none shadow-xl max-w-2xl"><p class="text-sm font-medium">${userText}</p></div></div>`;
+            wrap.innerHTML = `<div class="flex justify-end"><div class="bg-gray-100 border border-gray-200 text-gray-800 px-6 py-3 rounded-2xl rounded-tr-none shadow-sm max-w-2xl"><p class="text-sm font-medium">${userText}</p></div></div>`;
             
             const grid = document.createElement('div');
-            grid.id = "latest-grid"; // ID sementara untuk identifikasi target update
+            grid.id = "latest-grid"; 
             grid.className = "grid grid-cols-1 md:grid-cols-2 gap-6";
             grid.innerHTML = `
-                ${createSkeletonCard("DeepSeek R1", "fa-brain", "text-rose-400")}
-                ${createSkeletonCard("Fine-Tuned Model", "fa-microchip", "text-blue-400")}
-                ${createSkeletonCard("Gemini Enhancer", "fa-wand-magic-sparkles", "text-purple-400")}
-                ${createSkeletonCard("Final Conclusion", "fa-check-double", "text-green-400")}
+                ${createSkeletonCard("DeepSeek R1", "fa-brain", "text-red-600")}
+                ${createSkeletonCard("Fine-Tuned Model", "fa-microchip", "text-gray-900")}
+                ${createSkeletonCard("Gemini Enhancer", "fa-wand-magic-sparkles", "text-red-600")}
+                ${createSkeletonCard("Final Conclusion", "fa-check-double", "text-gray-900")}
             `;
             wrap.appendChild(grid);
             chatBox.appendChild(wrap);
@@ -303,59 +310,56 @@
 
         function updateAIUI(container, data) {
             const sections = [
-                { id: 'deepseek', content: data.deepseek, icon: 'fa-brain', color: 'text-rose-400', title: 'DeepSeek R1 (Reasoning)', border: 'border-rose-500/10' },
-                { id: 'finetuned', content: data.fine_tuned, icon: 'fa-microchip', color: 'text-blue-400', title: 'Fine-Tuned Model', border: 'border-blue-500/10' },
-                { id: 'gemini', content: data.gemini, icon: 'fa-wand-magic-sparkles', color: 'text-purple-400', title: 'Gemini Enhancer', border: 'border-purple-500/10' },
-                { id: 'conclusion', content: data.conclusion, icon: 'fa-check-double', color: 'text-green-400', title: 'Final Conclusion', border: 'border-green-500/10' }
+                { id: 'deepseek', content: data.deepseek, icon: 'fa-brain', color: 'text-red-600', title: 'DeepSeek R1 (Reasoning)', border: 'border-gray-200' },
+                { id: 'finetuned', content: data.fine_tuned, icon: 'fa-microchip', color: 'text-gray-900', title: 'Fine-Tuned Model', border: 'border-gray-200' },
+                { id: 'gemini', content: data.gemini, icon: 'fa-wand-magic-sparkles', color: 'text-red-600', title: 'Gemini Enhancer', border: 'border-gray-200' },
+                { id: 'conclusion', content: data.conclusion, icon: 'fa-check-double', color: 'text-gray-900', title: 'Final Conclusion', border: 'border-gray-200' }
             ];
 
             container.innerHTML = '';
             sections.forEach(sec => {
                 const el = document.createElement('div');
-                el.className = `card-answer p-6 rounded-3xl flex flex-col h-full border ${sec.border}`;
+                el.className = `card-answer p-6 rounded-3xl flex flex-col h-full border ${sec.border} bg-white`;
                 const md = (sec.content || "Data tidak ditemukan.").replace(/\\n/g, '\n');
                 el.innerHTML = `
-                    <div class="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
+                    <div class="flex items-center gap-3 mb-4 pb-3 border-b border-gray-100">
                         <i class="fa-solid ${sec.icon} ${sec.color}"></i>
                         <h3 class="font-bold text-[10px] uppercase tracking-widest ${sec.color}">${sec.title}</h3>
                     </div>
-                    <div class="content-scroll text-gray-300 text-sm markdown-body mb-6">${marked.parse(md)}</div>
-                    <div class="mt-auto pt-4 border-t border-white/5 btn-group">
-                        <p class="text-[8px] text-gray-500 uppercase tracking-widest mb-3 text-center">Apakah Informasi Relevan? (Guttman)</p>
+                    <div class="content-scroll text-gray-700 text-sm markdown-body mb-6">${marked.parse(md)}</div>
+                    <div class="mt-auto pt-4 border-t border-gray-100 btn-group">
+                        <p class="text-[8px] text-gray-400 uppercase tracking-widest mb-3 text-center">Apakah Informasi Relevan? (Guttman)</p>
                         <div class="flex gap-2">
-                            <button onclick="setRelevance('${sec.id}', 1, this)" class="flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all">RELEVAN</button>
-                            <button onclick="setRelevance('${sec.id}', 0, this)" class="flex-1 bg-white/5 text-[10px] font-bold py-2 rounded-lg border border-white/5 transition-all">TIDAK</button>
+                            <button onclick="setRelevance('${sec.id}', 1, this)" class="flex-1 bg-gray-50 text-gray-600 text-[10px] font-bold py-2 rounded-lg border border-gray-200 transition-all hover:bg-gray-100">RELEVAN</button>
+                            <button onclick="setRelevance('${sec.id}', 0, this)" class="flex-1 bg-gray-50 text-gray-600 text-[10px] font-bold py-2 rounded-lg border border-gray-200 transition-all hover:bg-gray-100">TIDAK</button>
                         </div>
                     </div>
                 `;
                 container.appendChild(el);
             });
 
-            // Hapus satisfaction area lama jika ada
             const oldSatArea = document.getElementById('satisfaction-area');
             if (oldSatArea) oldSatArea.remove();
 
             const satArea = document.createElement('div');
             satArea.id = "satisfaction-area";
-            satArea.className = "hidden col-span-full bg-white/5 border border-white/10 p-8 rounded-[40px] text-center space-y-6 mt-4 max-w-2xl mx-auto w-full shadow-2xl animate-fade-in";
+            satArea.className = "hidden col-span-full bg-white border border-gray-200 p-8 rounded-[40px] text-center space-y-6 mt-4 max-w-2xl mx-auto w-full shadow-lg animate-fade-in";
             satArea.innerHTML = `
                 <div class="space-y-1">
-                    <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-orange-500 italic">User Satisfaction Level</h4>
+                    <h4 class="text-xs font-bold uppercase tracking-[0.2em] text-red-600 italic">User Satisfaction Level</h4>
                     <p class="text-[10px] text-gray-500">Geser slider untuk menentukan tingkat kepuasan terhadap respons sistem.</p>
                 </div>
-                <input type="range" min="0" max="5" step="1" value="0" id="sat-slider" class="w-full h-1.5 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-orange-600">
-                <div class="flex justify-between text-[9px] font-bold text-gray-600 uppercase px-2"><span>Buruk</span><span>Biasa saja</span><span>Sangat Puas</span></div>
+                <input type="range" min="0" max="5" step="1" value="0" id="sat-slider" class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-red-600">
+                <div class="flex justify-between text-[9px] font-bold text-gray-400 uppercase px-2"><span>Buruk</span><span>Biasa saja</span><span>Sangat Puas</span></div>
                 <div id="submit-area" class="hidden pt-4 animate-fade-in">
-                    <button onclick="submitEvaluation()" class="w-full bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold px-10 py-4 rounded-2xl shadow-2xl transition-all uppercase tracking-widest">
+                    <button onclick="submitEvaluation()" class="w-full bg-red-600 hover:bg-red-700 text-white text-[11px] font-bold px-10 py-4 rounded-2xl shadow-md transition-all uppercase tracking-widest">
                         SIMPAN DATA EVALUASI & LANJUTKAN
                     </button>
                 </div>
             `;
             
-            // Masukkan area kepuasan di bawah grid jawaban terbaru
             container.after(satArea);
 
-            // Re-bind listener untuk slider baru
             document.getElementById('sat-slider').addEventListener('input', (e) => { 
                 currentEvalData.satisfaction = parseInt(e.target.value); 
                 checkProgress(); 
@@ -392,7 +396,7 @@
             } catch (e) {
                 setPromptLoading(false);
                 showToast("Server sedang sibuk. Silakan coba beberapa saat lagi.");
-                container.innerHTML = `<div class="col-span-full text-center text-red-500 py-10 font-bold bg-red-500/5 rounded-3xl border border-red-500/20">Koneksi n8n Terputus</div>`;
+                container.innerHTML = `<div class="col-span-full text-center text-red-600 py-10 font-bold bg-red-50 rounded-3xl border border-red-200">Koneksi n8n Terputus</div>`;
             }
         }
 
