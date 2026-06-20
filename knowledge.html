@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Base Management - BaliAI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 1.5rem;
+        }
+
+        .tab-btn.active {
+            background-color: #d9383a;
+            color: #ffffff;
+            border-color: #d9383a;
+        }
+
+        /* Toast & Animations */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn-loading {
+            background-color: #b91c1c !important;
+            cursor: wait !important;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-8 bg-[#f9fafb] min-h-screen flex flex-col">
+
+    <div id="toast-container"></div>
+
+    <div
+        class="max-w-4xl w-full mx-auto mb-8 flex flex-col sm:flex-row justify-between items-center gap-4 border-b border-gray-200 pb-6">
+        <div class="flex items-center gap-4">
+            <div class="bg-[#d9383a] text-white p-3 rounded-2xl shadow-md">
+                <i class="fa-solid fa-book-open text-2xl"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Knowledge Base <span
+                        class="text-[#d9383a] italic text-xs ml-1">Repository</span></h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">Ekstraksi Kebudayaan Bali • BPK
+                    Wilayah XV</p>
+            </div>
+        </div>
+        <div class="flex gap-2">
+            <a href="index.html"
+                class="text-[10px] font-bold uppercase tracking-widest bg-white text-gray-700 border border-gray-300 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-all shadow-sm">
+                <i class="fa-solid fa-home mr-1.5"></i> Dashboard
+            </a>
+            <a href="analytics.html"
+                class="text-[10px] font-bold uppercase tracking-widest bg-white text-gray-700 border border-gray-300 px-4 py-2.5 rounded-xl hover:bg-gray-50 transition-all shadow-sm">
+                <i class="fa-solid fa-chart-pie mr-1.5"></i> Analytics
+            </a>
+        </div>
+    </div>
+
+    <main class="flex-1 max-w-4xl w-full mx-auto">
+        <div class="form-card p-6 md:p-8">
+
+            <div class="mb-6 border-b border-gray-100 pb-4">
+                <h2 class="text-sm font-bold uppercase tracking-widest text-gray-900">Tambah Pengetahuan Budaya Baru
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">Suntikkan data referensi dokumen biner atau teks struktural ke
+                    dalam sistem.</p>
+            </div>
+
+            <form id="knowledge-form" class="space-y-6" onsubmit="handleSubmit(event)">
+
+                <div>
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Metode Input
+                        Data Sumber</label>
+                    <div class="flex bg-gray-100 p-1 rounded-xl max-w-xs border border-gray-200">
+                        <button type="button" onclick="switchTab('pdf')" id="tab-pdf"
+                            class="tab-btn active flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all text-center">
+                            <i class="fa-solid fa-file-pdf mr-1"></i> File PDF
+                        </button>
+                        <button type="button" onclick="switchTab('text')" id="tab-text"
+                            class="tab-btn flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all text-gray-500 text-center hover:text-gray-900">
+                            <i class="fa-solid fa-align-left mr-1"></i> Teks Manual
+                        </button>
+                    </div>
+                </div>
+
+                <div id="input-area-pdf" class="space-y-4">
+                    <label class="block text-[11px] font-bold uppercase tracking-widest text-gray-500">Unggah File PDF
+                        Manuskrip / Laporan Penelitian</label>
+                    <div
+                        class="border-2 border-dashed border-gray-200 hover:border-[#d9383a] bg-white rounded-2xl p-8 text-center transition-all relative cursor-pointer group">
+                        <input type="file" id="pdf-file" accept=".pdf" onchange="handleFileSelect(this)"
+                            class="absolute inset-0 opacity-0 cursor-pointer w-full h-full">
+                        <div class="space-y-2 pointer-events-none">
+                            <i id="upload-icon"
+                                class="fa-solid fa-cloud-arrow-up text-3xl text-gray-300 group-hover:text-[#d9383a] transition-colors"></i>
+                            <p id="upload-filename" class="text-xs font-semibold text-gray-700">Tarik dan lepas file PDF
+                                Anda di sini, atau <span class="text-[#d9383a]">pilih file</span></p>
+                            <p class="text-[10px] text-gray-400">Maksimal ukuran file dokumen: 15MB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="input-area-text" class="hidden space-y-6">
+                    <div>
+                        <label
+                            class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Klasifikasi
+                            Kebudayaan Bali</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <label
+                                class="relative flex items-center gap-3 p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer transition-all focus-within:border-[#d9383a]">
+                                <input type="radio" name="culture_type" value="Benda" checked
+                                    class="w-4 h-4 text-[#d9383a] accent-[#d9383a] focus:ring-red-500">
+                                <div>
+                                    <span class="block text-xs font-bold text-gray-900">Warisan Budaya Benda
+                                        (Tangible)</span>
+                                    <span class="block text-[10px] text-gray-400 mt-0.5">Contoh: Pura, Situs Cagar
+                                        Budaya, Struktur, Arsitektur Wadah.</span>
+                                </div>
+                            </label>
+                            <label
+                                class="relative flex items-center gap-3 p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 cursor-pointer transition-all focus-within:border-[#d9383a]">
+                                <input type="radio" name="culture_type" value="Tak Benda"
+                                    class="w-4 h-4 text-[#d9383a] accent-[#d9383a] focus:ring-red-500">
+                                <div>
+                                    <span class="block text-xs font-bold text-gray-900">Warisan Budaya Tak Benda
+                                        (Intangible)</span>
+                                    <span class="block text-[10px] text-gray-400 mt-0.5">Contoh: Seni Pertunjukan,
+                                        Ritus, Adat Istiadat, Tradisi Upacara.</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-1">
+                            <label for="no-registrasi"
+                                class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">No.
+                                Registrasi Resmi</label>
+                            <input type="text" id="no-registrasi"
+                                class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#d9383a] transition-all font-mono"
+                                placeholder="Contoh: BPK-XV-TB-001">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label for="knowledge-title"
+                                class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Nama
+                                Budaya / Objek</label>
+                            <input type="text" id="knowledge-title"
+                                class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#d9383a] transition-all"
+                                placeholder="Misal: Tari Barong Ket, Pura Besakih...">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="kategori"
+                                class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Kategori
+                                Spesifik</label>
+                            <input type="text" id="kategori"
+                                class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#d9383a] transition-all"
+                                placeholder="Misal: Seni Pertunjukan, Situs Cagar Budaya, Ritus...">
+                        </div>
+                        <div>
+                            <label for="asal-kabupaten"
+                                class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Asal
+                                Kabupaten / Kota</label>
+                            <input type="text" id="asal-kabupaten"
+                                class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#d9383a] transition-all"
+                                placeholder="Misal: Gianyar, Denpasar, Badung, Karangasem...">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="knowledge-description"
+                            class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Deskripsi
+                            Detail Informasi Kebudayaan</label>
+                        <textarea id="knowledge-description" rows="4"
+                            class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl p-4 focus:outline-none focus:border-[#d9383a] transition-all placeholder-gray-400 resize-none"
+                            placeholder="Tuliskan data tekstual penjelasan umum, ciri khas, bentuk fisik, tata pelaksanaan kebudayaan secara mendalam disini..."></textarea>
+                    </div>
+
+                    <div>
+                        <label for="sejarah-filosofi"
+                            class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Sejarah &
+                            Filosofi</label>
+                        <textarea id="sejarah-filosofi" rows="4"
+                            class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl p-4 focus:outline-none focus:border-[#d9383a] transition-all placeholder-gray-400 resize-none"
+                            placeholder="Tuliskan latar belakang sejarah, asal-usul, nilai spiritual, arti simbolis, atau filosofi mendalam kebudayaan ini..."></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="source-author"
+                                class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Sumber
+                                Data / Referensi Dokumen</label>
+                            <input type="text" id="source-author"
+                                class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#d9383a] transition-all placeholder-gray-400"
+                                placeholder="Misal: Dokumen Inventarisasi BPK Wilayah XV">
+                        </div>
+                        <div>
+                            <label for="source-year"
+                                class="block text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-2">Tahun
+                                Pencatatan / Publikasi</label>
+                            <input type="number" id="source-year" min="1500" max="2030" value="2026"
+                                class="w-full bg-white text-gray-900 text-xs font-medium border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-[#d9383a] transition-all font-mono">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100 flex justify-end">
+                    <button type="submit" id="submit-btn"
+                        class="w-full sm:w-auto bg-[#d9383a] hover:bg-[#b91c1c] text-white text-[11px] font-bold px-8 py-3.5 rounded-xl shadow-md transition-all uppercase tracking-widest flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus-circle"></i> <span id="btn-text">Inject Data Pengetahuan</span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <div class="mt-8 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Total Pengetahuan</p>
+                        <h3 class="text-2xl font-extrabold text-gray-900 mt-1 font-mono" id="metric-total">465</h3>
+                    </div>
+                    <p class="text-[10px] text-[#d9383a] font-semibold mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-database"></i> Core Sync Repository
+                    </p>
+                </div>
+                <div
+                    class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between border-l-4 border-l-gray-900">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Warisan Tangible</p>
+                        <h3 class="text-2xl font-extrabold text-gray-900 mt-1 font-mono" id="metric-benda">210</h3>
+                    </div>
+                    <p class="text-[10px] text-gray-500 font-semibold mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-monument"></i> Cagar Budaya Benda
+                    </p>
+                </div>
+                <div
+                    class="bg-white border border-gray-200 p-5 rounded-2xl shadow-sm flex flex-col justify-between border-l-4 border-l-[#d9383a]">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Warisan Intangible</p>
+                        <h3 class="text-2xl font-extrabold text-gray-900 mt-1 font-mono" id="metric-takbenda">255</h3>
+                    </div>
+                    <p class="text-[10px] text-gray-500 font-semibold mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-masks-theater"></i> Seni Ritus & Adat
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+                <div
+                    class="p-5 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-[#d9383a]"></i> Manifestasi Data Ter-Injeksi
+                        </h3>
+                        <p class="text-[11px] text-gray-400 mt-0.5">Data ter-update otomatis dari server lokal n8n via
+                            GET request pipeline.</p>
+                    </div>
+                    <button onclick="fetchAndRenderAssets()"
+                        class="text-[10px] font-bold uppercase tracking-wider bg-white border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-gray-50 text-gray-600 transition-all flex items-center gap-1">
+                        <i class="fa-solid fa-rotate text-[9px]"></i> Sync List
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr
+                                class="border-b border-gray-100 bg-gray-50/30 text-[9px] uppercase font-bold tracking-widest text-gray-400 font-mono">
+                                <th class="p-4 w-[140px]">No. Registrasi</th>
+                                <th class="p-4 w-[200px]">Nama Objek Budaya</th>
+                                <th class="p-4 w-[100px]">Klasifikasi</th>
+                                <th class="p-4">Deskripsi / Status Sumber</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assets-table-body" class="divide-y divide-gray-100 text-xs text-gray-600 bg-white">
+                            <tr>
+                                <td colspan="4" class="p-8 text-center text-gray-400 font-mono text-[11px]">
+                                    <i class="fa-solid fa-circle-notch animate-spin text-[#d9383a] mr-1"></i> Memuat
+                                    repositori database biner...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="mt-12 py-4 text-center border-t border-gray-200 max-w-4xl w-full mx-auto">
+        <p class="text-[10px] text-gray-400 uppercase tracking-widest">© 2026 Bali Culture AI Multi-Agent System Engine
+        </p>
+    </footer>
+
+    <script>
+        // SEPARASI WEBHOOK URL SENSOR ENGINE
+        const POST_WEBHOOK_URL = "https://n8n.arcomteknologi.co.id/webhook/2f06ac9c-dbc0-4450-993b-0395120e9051"; // Jalur POST (Inject)
+        const GET_WEBHOOK_URL = "https://n8n.arcomteknologi.co.id/webhook/e44e1e6c-eead-4d71-9a8e-680744c22e7f";   // Jalur GET (Fetch List)
+
+        const STATIC_BASE_COUNT = 465;
+        let currentActiveTab = "pdf";
+
+        function showToast(msg, type = "error") {
+            const toast = document.createElement('div');
+            const bg = type === "error" ? "bg-red-600" : "bg-black";
+            toast.className = `toast ${bg} text-white px-5 py-2.5 rounded-xl shadow-xl mb-3 flex items-center gap-2.5 border border-white/10`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'error' ? 'fa-circle-exclamation' : 'fa-check-circle text-green-400'}"></i> <span class="text-xs font-bold">${msg}</span>`;
+            document.getElementById('toast-container').appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function switchTab(tabType) {
+            currentActiveTab = tabType;
+            const tabPdf = document.getElementById('tab-pdf');
+            const tabText = document.getElementById('tab-text');
+            const areaPdf = document.getElementById('input-area-pdf');
+            const areaText = document.getElementById('input-area-text');
+
+            const reqTitle = document.getElementById('knowledge-title');
+            const reqDesc = document.getElementById('knowledge-description');
+
+            if (tabType === 'pdf') {
+                tabPdf.className = "tab-btn active flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all text-center";
+                tabText.className = "tab-btn flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all text-gray-500 text-center hover:text-gray-900";
+                areaPdf.classList.remove('hidden');
+                areaText.classList.add('hidden');
+
+                reqTitle.required = false;
+                reqDesc.required = false;
+            } else {
+                tabText.className = "tab-btn active flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all text-center";
+                tabPdf.className = "tab-btn flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all text-gray-500 text-center hover:text-gray-900";
+                areaText.classList.remove('hidden');
+                areaPdf.classList.add('hidden');
+
+                reqTitle.required = true;
+                reqDesc.required = true;
+            }
+        }
+
+        function handleFileSelect(input) {
+            const filenameText = document.getElementById('upload-filename');
+            const icon = document.getElementById('upload-icon');
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                filenameText.innerHTML = `File terpilih: <span class="text-[#d9383a] font-bold">${file.name}</span> (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                icon.className = "fa-solid fa-file-pdf text-3xl text-[#d9383a]";
+            } else {
+                filenameText.innerHTML = `Tarik dan lepas file PDF Anda di sini, atau <span class="text-[#d9383a]">pilih file</span>`;
+                icon.className = "fa-solid fa-cloud-arrow-up text-3xl text-gray-300";
+            }
+        }
+
+        // PIPELINE GET: Menggunakan GET_WEBHOOK_URL untuk Fetch Repositori Data
+        async function fetchAndRenderAssets() {
+            const tableBody = document.getElementById('assets-table-body');
+            const metricTotal = document.getElementById('metric-total');
+            const metricBenda = document.getElementById('metric-benda');
+            const metricTakBenda = document.getElementById('metric-takbenda');
+
+            try {
+                const response = await fetch(GET_WEBHOOK_URL, { method: 'GET' });
+                if (!response.ok) throw new Error("Gagal sync list via GET.");
+
+                const dataList = await response.json();
+                tableBody.innerHTML = "";
+
+                if (dataList && dataList.length > 0) {
+                    let countBenda = 210;
+                    let countTakBenda = 255;
+
+                    dataList.forEach(item => {
+                        if (item.jenis_budaya === 'Benda') countBenda++;
+                        if (item.jenis_budaya === 'Tak Benda') countTakBenda++;
+
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-gray-50/60 transition-colors";
+
+                        const badgeStyle = item.jenis_budaya === 'Benda' ? 'bg-gray-900 text-white' : 'bg-red-50 text-[#d9383a] border-red-200';
+                        const isFileSource = !item.nama_objek && !item.deskripsi;
+
+                        tr.innerHTML = `
+                            <td class="p-4 font-mono font-bold tracking-wider text-gray-400">${item.no_registrasi || 'FILE-PARSED'}</td>
+                            <td class="p-4 text-gray-900 font-bold">${item.nama_objek || 'Dokumen Manuskrip Mentah'}</td>
+                            <td class="p-4">
+                                <span class="px-2 py-0.5 rounded text-[9px] font-bold border ${badgeStyle}">
+                                    ${item.jenis_budaya || 'Binary'}
+                                </span>
+                            </td>
+                            <td class="p-4">
+                                <div class="flex flex-col gap-1">
+                                    <p class="text-gray-500 line-clamp-1">${item.deskripsi || 'Sedang diekstraksi oleh Multi-Agent System Core...'}</p>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="text-[8px] font-mono bg-red-600 text-white px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                            <i class="fa-solid fa-server mr-1"></i> Hot DB
+                                        </span>
+                                        <span class="text-[8px] font-mono bg-gray-100 text-gray-500 border border-gray-200 px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                                            <i class="fa-solid ${isFileSource ? 'fa-file-lines' : 'fa-keyboard'} mr-1"></i> Src: ${isFileSource ? 'PDF Upload' : 'Kolom Struktural'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(tr);
+                    });
+
+                    metricBenda.innerText = countBenda;
+                    metricTakBenda.innerText = countTakBenda;
+                    metricTotal.innerText = STATIC_BASE_COUNT + dataList.length;
+                } else {
+                    renderEmptyOrCacheRow(tableBody);
+                }
+            } catch (err) {
+                console.warn("Gagal fetching live data. Render fallback state.");
+                renderEmptyOrCacheRow(tableBody);
+            }
+        }
+
+        function renderEmptyOrCacheRow(tableContainer) {
+            tableContainer.innerHTML = `
+                <tr class="bg-gray-50/50">
+                    <td colspan="3" class="p-6 text-center font-mono font-bold text-gray-400 text-[10px]">
+                        CORE VECTOR STORAGE ACTIVATED (+465 FIXED PARAMETERS BAKED)
+                    </td>
+                    <td class="p-6 text-right">
+                        <span class="text-[8px] font-mono bg-gray-900 text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                            <i class="fa-solid fa-brain text-[#d9383a] mr-1"></i> Weights Locked
+                        </span>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // PIPELINE POST: Menggunakan POST_WEBHOOK_URL untuk Menyuntikkan Data
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const submitBtn = document.getElementById('submit-btn');
+            const btnText = document.getElementById('btn-text');
+            const pdfFileInput = document.getElementById('pdf-file');
+
+            submitBtn.classList.add('btn-loading');
+            submitBtn.disabled = true;
+            btnText.innerHTML = "INJECTING DATA...";
+
+            try {
+                let response;
+
+                if (currentActiveTab === 'pdf') {
+                    if (!pdfFileInput.files || pdfFileInput.files.length === 0) {
+                        throw new Error("Silakan pilih file PDF yang ingin diunggah terlebih dahulu!");
+                    }
+
+                    const formData = new FormData();
+                    formData.append('data', pdfFileInput.files[0]);
+
+                    response = await fetch(POST_WEBHOOK_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                } else {
+                    const cultureType = document.querySelector('input[name="culture_type"]:checked').value;
+                    const noRegistrasi = document.getElementById('no-registrasi').value.trim() || `BPK-XV-AUTO-${Math.floor(1000 + Math.random() * 9000)}`;
+                    const title = document.getElementById('knowledge-title').value.trim();
+                    const kategori = document.getElementById('kategori').value.trim();
+                    const kabupaten = document.getElementById('asal-kabupaten').value.trim();
+                    const deskripsi = document.getElementById('knowledge-description').value.trim();
+                    const filosofi = document.getElementById('sejarah-filosofi').value.trim();
+                    const author = document.getElementById('source-author').value.trim() || "Dokumen Inventarisasi BPK Wilayah XV";
+                    const year = document.getElementById('source-year').value;
+
+                    const jsonPayload = {
+                        "no_registrasi": noRegistrasi,
+                        "nama_objek": title,
+                        "jenis_budaya": cultureType,
+                        "kategori": kategori,
+                        "asal_kabupaten": kabupaten,
+                        "deskripsi": deskripsi,
+                        "sejarah_filosofi": filosofi,
+                        "sumber_data": `${author} (${year})`
+                    };
+
+                    response = await fetch(POST_WEBHOOK_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(jsonPayload)
+                    });
+                }
+
+                if (!response.ok) throw new Error("Gagal menyuntikkan data. Endpoint menolak request.");
+
+                showToast("Sukses! Data pengetahuan berhasil dikirim ke n8n engine.", "success");
+
+                document.getElementById('knowledge-form').reset();
+                handleFileSelect(pdfFileInput);
+                if (currentActiveTab === 'text') switchTab('pdf');
+
+                // Otomatis trigger pipeline GET untuk perbarui list data di bawah
+                await fetchAndRenderAssets();
+
+            } catch (error) {
+                console.error("Transmisi Gagal: ", error);
+                showToast(error.message || "Koneksi terputus atau webhook n8n tidak merespons.");
+            } finally {
+                submitBtn.classList.remove('btn-loading');
+                submitBtn.disabled = false;
+                btnText.innerHTML = "Inject Data Pengetahuan";
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", fetchAndRenderAssets);
+    </script>
+</body>
+
+</html>
