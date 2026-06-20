@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,120 +8,353 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f0f0f; color: #e5e7eb; }
-        .stat-card { background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
-        .chart-container { position: relative; height: 300px; width: 100%; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border-radius: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(220, 38, 38, 0.1);
+            border-radius: 50%;
+            border-top-color: #dc2626;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
-<body class="p-4 md:p-8">
 
-    <div class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-6">
+<body class="p-4 md:p-8 bg-[#f9fafb]">
+
+    <div
+        class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-gray-200 pb-6">
         <div class="flex items-center gap-4">
-            <a href="index.html" class="p-3 bg-white/5 rounded-xl border border-white/10 hover:bg-orange-600 transition-all">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
+            <div class="bg-red-600 text-white p-3 rounded-2xl shadow-md">
+                <i class="fa-solid fa-chart-pie text-2xl"></i>
+            </div>
             <div>
-                <h1 class="text-2xl font-bold text-white">Research Analytics</h1>
-                <p class="text-gray-500 text-sm italic">Data performa sistem Multi-Agent & Skala Guttman</p>
+                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Research Analytics <span
+                        class="text-red-600 italic text-xs ml-1">Metrics & Evaluations</span></h1>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider mt-0.5">BPK Wilayah XV • Sistem Dashboard
+                    Multi-Agent</p>
             </div>
         </div>
-        <div id="last-update" class="text-[10px] uppercase tracking-widest text-gray-500 bg-white/5 px-4 py-2 rounded-full border border-white/5">
-            Menghubungkan ke Database...
-        </div>
+        <a href="index.html"
+            class="text-[10px] font-bold uppercase tracking-widest bg-white text-gray-800 border border-gray-300 px-5 py-3 rounded-xl hover:bg-black hover:text-white transition-all shadow-sm">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Kembali ke Dashboard
+        </a>
     </div>
 
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-        <div class="stat-card p-6 rounded-3xl">
-            <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Total Evaluasi</p>
-            <h3 id="total-eval" class="text-3xl font-black text-orange-500">0</h3>
-        </div>
-        <div class="stat-card p-6 rounded-3xl">
-            <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Avg. Satisfaction</p>
-            <h3 id="avg-sat" class="text-3xl font-black text-blue-400">0.0</h3>
-        </div>
-        <div class="stat-card p-6 rounded-3xl">
-            <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Avg. Response Time</p>
-            <h3 id="avg-time" class="text-3xl font-black text-purple-400">0s</h3>
-        </div>
-        <div class="stat-card p-6 rounded-3xl">
-            <p class="text-[10px] text-gray-500 uppercase font-bold mb-1">Total Word Count</p>
-            <h3 id="total-words" class="text-3xl font-black text-green-400">0</h3>
-        </div>
+    <div id="loading-screen" class="max-w-7xl mx-auto flex flex-col items-center justify-center py-32 space-y-4">
+        <div class="spinner"></div>
+        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Menghubungkan ke API Database...</p>
     </div>
 
-    <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="stat-card p-8 rounded-[40px]">
-            <h4 class="text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-square-poll-vertical text-orange-500"></i> Relevansi Model (Skala Guttman)
-            </h4>
-            <div class="chart-container">
-                <canvas id="relevancyChart"></canvas>
+    <div id="error-screen" class="hidden max-w-7xl mx-auto text-center py-24 space-y-4">
+        <div class="inline-flex bg-red-100 text-red-600 p-4 rounded-full border border-red-200">
+            <i class="fa-solid fa-circle-exclamation text-3xl"></i>
+        </div>
+        <h2 class="text-lg font-bold text-gray-900">Gagal Mengambil Data Real-Time</h2>
+        <p class="text-xs text-gray-500 max-w-md mx-auto">Pastikan endpoint API Anda aktif atau periksa cross-origin
+            kebijakan jaringan Anda.</p>
+        <button onclick="fetchAnalyticsData()"
+            class="text-[10px] font-bold uppercase tracking-widest bg-red-600 text-white px-5 py-2.5 rounded-lg hover:bg-red-700 transition-all">
+            Coba Sinkronisasi Ulang
+        </button>
+    </div>
+
+    <div id="dashboard-content" class="hidden max-w-7xl mx-auto space-y-8">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="stat-card p-6 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Query Masuk</p>
+                    <h3 id="total-queries" class="text-3xl font-bold text-gray-900 mt-1">0</h3>
+                </div>
+                <div class="bg-gray-100 text-gray-900 p-4 rounded-xl border border-gray-200"><i
+                        class="fa-solid fa-database text-xl"></i></div>
+            </div>
+
+            <div class="stat-card p-6 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rata-rata Latensi</p>
+                    <h3 id="avg-latency" class="text-3xl font-bold text-red-600 mt-1">0s</h3>
+                </div>
+                <div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100"><i
+                        class="fa-solid fa-hourglass-half text-xl"></i></div>
+            </div>
+
+            <div class="stat-card p-6 flex items-center justify-between">
+                <div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Tingkat Kepuasan (CSAT)</p>
+                    <h3 id="avg-satisfaction" class="text-3xl font-bold text-gray-900 mt-1">0.0<span
+                            class="text-sm text-gray-400">/5</span></h3>
+                </div>
+                <div class="bg-gray-100 text-gray-900 p-4 rounded-xl border border-gray-200"><i
+                        class="fa-solid fa-star text-xl text-yellow-500"></i></div>
+            </div>
+
+            <div class="stat-card p-6 flex items-center justify-between border-l-4 border-l-red-600">
+                <div>
+                    <div class="flex items-center gap-1.5 group cursor-help relative">
+                        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Goal Completion Rate
+                        </p>
+                        <i class="fa-solid fa-circle-info text-[9px] text-gray-400"></i>
+                        <div
+                            class="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-gray-900 text-white text-[10px] p-2.5 rounded-lg shadow-xl font-mono whitespace-nowrap z-50">
+                            GCR = (Σ Skor 1 / Total Indikator) * 100%
+                        </div>
+                    </div>
+                    <h3 id="gcr-rate" class="text-3xl font-bold text-red-600 mt-1">0%</h3>
+                </div>
+                <div class="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100"><i
+                        class="fa-solid fa-bullseye text-xl"></i></div>
             </div>
         </div>
 
-        <div class="stat-card p-8 rounded-[40px]">
-            <h4 class="text-sm font-bold uppercase tracking-widest mb-6 flex items-center gap-2">
-                <i class="fa-solid fa-bolt text-yellow-500"></i> Tren Response Time (ms)
-            </h4>
-            <div class="chart-container">
-                <canvas id="latencyChart"></canvas>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="stat-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-red-600"></span> Grafik Latensi Sistem (ms)
+                    </h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="latencyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="stat-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-black"></span> Tingkat Relevansi Model (% Benar)
+                    </h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="relevanceChart"></canvas>
+                </div>
             </div>
         </div>
+
+        <div class="stat-card p-6">
+            <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div>
+                    <h2 class="text-xs font-bold uppercase tracking-widest text-gray-900 flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-red-600"></span> Log Riwayat Penelitian & Evaluasi Guttman
+                    </h2>
+                    <p class="text-[11px] text-gray-400 mt-1">Listing seluruh transaksi data respon dari webhook API
+                        database terintegrasi.</p>
+                </div>
+                <div
+                    class="text-[10px] font-mono font-bold bg-gray-100 text-gray-600 border border-gray-200 px-3 py-1.5 rounded-lg">
+                    Total Records: <span id="table-count" class="text-red-600">0</span>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr
+                            class="bg-gray-50 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider text-[10px]">
+                            <th class="p-4">ID / Sesi</th>
+                            <th class="p-4">Pertanyaan Peneliti</th>
+                            <th class="p-4 text-center">Guttman Score (DS | FT | GM | CC)</th>
+                            <th class="p-4 text-center">Total Kata</th>
+                            <th class="p-4 text-center">Latensi</th>
+                            <th class="p-4">Browser / Sistem Info</th>
+                        </tr>
+                    </thead>
+                    <tbody id="evaluation-table-body" class="divide-y divide-gray-200 text-gray-700 font-medium">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script>
-        const API_URL = "https://n8n.arcomteknologi.co.id/webhook/c7f2667b-4d30-4278-95a6-b3167b429778";
+        const API_ENDPOINT = "https://n8n.arcomteknologi.co.id/webhook/c7f2667b-4d30-4278-95a6-b3167b429778";
 
-        async function fetchData() {
+        let latencyChartInstance = null;
+        let relevanceChartInstance = null;
+
+        async function fetchAnalyticsData() {
+            const loadingScreen = document.getElementById('loading-screen');
+            const errorScreen = document.getElementById('error-screen');
+            const dashboardContent = document.getElementById('dashboard-content');
+
+            loadingScreen.classList.remove('hidden');
+            errorScreen.classList.add('hidden');
+            dashboardContent.classList.add('hidden');
+
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(API_ENDPOINT, { method: 'GET' });
+                if (!response.ok) throw new Error("API Network error response");
+
                 const data = await response.json();
-                updateDashboard(data);
-                document.getElementById('last-update').innerText = `Terakhir Update: ${new Date().toLocaleTimeString()}`;
+                const dataArray = Array.isArray(data) ? data : [data];
+
+                if (dataArray.length === 0) {
+                    renderEmptyState();
+                } else {
+                    processAndRenderDashboard(dataArray);
+                }
+
+                loadingScreen.classList.add('hidden');
+                dashboardContent.classList.remove('hidden');
             } catch (error) {
-                console.error("Error fetching analytics:", error);
+                console.error("Analytics Fetch Error: ", error);
+                loadingScreen.classList.add('hidden');
+                errorScreen.classList.remove('hidden');
             }
         }
 
-        function updateDashboard(data) {
-            const count = data.length;
-            if (count === 0) return;
+        function processAndRenderDashboard(data) {
+            const totalQueries = data.length;
+            document.getElementById('table-count').innerText = totalQueries;
 
-            // Summary Stats
-            let totalSat = 0;
-            let totalTime = 0;
-            let totalWords = 0;
-            let relevancy = { ds: 0, ft: 0, gm: 0, cn: 0 };
+            // 1. Ambil Metrik Dasar
+            const avgLatency = (data.reduce((acc, curr) => acc + (curr.response_time_ms || curr.system_metrics?.response_time_ms || 0), 0) / totalQueries / 1000).toFixed(2);
+            const avgSatisfaction = (data.reduce((acc, curr) => acc + (curr.user_satisfaction || curr.user_metrics?.user_satisfaction || 0), 0) / totalQueries).toFixed(1);
+
+            // 2. Perhitungan Akumulasi Skor Guttman (Relevan = 1)
+            let totalRelevanSkor = 0;
+            let totalIndikatorUji = totalQueries * 4; // Ada 4 model per baris query (DeepSeek, Fine-Tuned, Gemini, Conclusion)
+
+            let countDS = 0, countFT = 0, countGM = 0, countCC = 0;
 
             data.forEach(item => {
-                totalSat += item.user_satisfaction;
-                totalTime += item.response_time_ms;
-                totalWords += item.word_count_total;
-                relevancy.ds += item.is_relevant_deepseek;
-                relevancy.ft += item.is_relevant_finetuned;
-                relevancy.gm += item.is_relevant_gemini;
-                relevancy.cn += item.is_relevant_conclusion;
+                const ds = item.is_relevant_deepseek ?? item.guttman_evaluation?.is_relevant_deepseek ?? 0;
+                const ft = item.is_relevant_finetuned ?? item.guttman_evaluation?.is_relevant_finetuned ?? 0;
+                const gm = item.is_relevant_gemini ?? item.guttman_evaluation?.is_relevant_gemini ?? 0;
+                const cc = item.is_relevant_conclusion ?? item.guttman_evaluation?.is_relevant_conclusion ?? 0;
+
+                countDS += (ds === 1 ? 1 : 0);
+                countFT += (ft === 1 ? 1 : 0);
+                countGM += (gm === 1 ? 1 : 0);
+                countCC += (cc === 1 ? 1 : 0);
+
+                totalRelevanSkor += (ds + ft + gm + cc);
             });
 
-            document.getElementById('total-eval').innerText = count;
-            document.getElementById('avg-sat').innerText = (totalSat / count).toFixed(1);
-            document.getElementById('avg-time').innerText = ((totalTime / count) / 1000).toFixed(1) + 's';
-            document.getElementById('total-words').innerText = totalWords.toLocaleString();
+            // Hitung Goal Completion Rate (GCR) Berdasarkan Rumus
+            const gcrRate = totalIndikatorUji > 0 ? Math.round((totalRelevanSkor / totalIndikatorUji) * 100) : 0;
 
-            // Relevancy Bar Chart
-            const ctxRel = document.getElementById('relevancyChart').getContext('2d');
-            new Chart(ctxRel, {
-                type: 'bar',
+            document.getElementById('total-queries').innerText = totalQueries;
+            document.getElementById('avg-latency').innerText = `${avgLatency}s`;
+            document.getElementById('avg-satisfaction').innerHTML = `${avgSatisfaction}<span class="text-sm text-gray-400">/5</span>`;
+            document.getElementById('gcr-rate').innerText = `${gcrRate}%`;
+
+            // 3. Render Tabel Listing Riwayat Evaluasi
+            const tableBody = document.getElementById('evaluation-table-body');
+            tableBody.innerHTML = '';
+
+            data.forEach(item => {
+                const query = item.user_query || "";
+                const sid = item.session_id || "N/A";
+                const id = item.id || "-";
+                const words = item.word_count_total || item.system_metrics?.word_count_total || 0;
+                const ms = item.response_time_ms || item.system_metrics?.response_time_ms || 0;
+                const browser = item.browser_info || item.user_metrics?.browser_info || "Unknown Browser";
+
+                const dsScore = item.is_relevant_deepseek ?? item.guttman_evaluation?.is_relevant_deepseek ?? 0;
+                const ftScore = item.is_relevant_finetuned ?? item.guttman_evaluation?.is_relevant_finetuned ?? 0;
+                const gmScore = item.is_relevant_gemini ?? item.guttman_evaluation?.is_relevant_gemini ?? 0;
+                const ccScore = item.is_relevant_conclusion ?? item.guttman_evaluation?.is_relevant_conclusion ?? 0;
+
+                const dateFormatted = item.created_at ? new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+
+                const scoreBadge = (val) => val === 1
+                    ? `<span class="bg-red-100 text-red-600 font-bold px-2 py-0.5 rounded border border-red-200">1</span>`
+                    : `<span class="bg-gray-100 text-gray-400 px-2 py-0.5 rounded border border-gray-200">0</span>`;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="p-4 font-mono">
+                        <div class="text-gray-900 font-bold">#${id}</div>
+                        <div class="text-[10px] text-gray-400 mt-0.5">${dateFormatted}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="text-gray-900 font-semibold max-w-xs md:max-w-md truncate" title="${query}">${query}</div>
+                        <div class="text-[10px] text-gray-400 font-mono mt-0.5 truncate max-w-xs">${sid}</div>
+                    </td>
+                    <td class="p-4 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            ${scoreBadge(dsScore)}
+                            ${scoreBadge(ftScore)}
+                            ${scoreBadge(gmScore)}
+                            ${scoreBadge(ccScore)}
+                        </div>
+                    </td>
+                    <td class="p-4 text-center text-gray-900 font-bold font-mono">${words.toLocaleString('id-ID')}</td>
+                    <td class="p-4 text-center text-red-600 font-bold font-mono">${(ms / 1000).toFixed(2)}s</td>
+                    <td class="p-4 text-[11px] text-gray-500 max-w-xs truncate" title="${browser}">${browser}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+
+            // 4. Render Chart Line Latensi Sistem
+            const ctxLat = document.getElementById('latencyChart').getContext('2d');
+            if (latencyChartInstance) latencyChartInstance.destroy();
+            latencyChartInstance = new Chart(ctxLat, {
+                type: 'line',
                 data: {
-                    labels: ['DeepSeek', 'Fine-Tuned', 'Gemini', 'Conclusion'],
+                    labels: data.map(item => `ID: ${item.id || '-'}`),
                     datasets: [{
-                        label: 'Skala Guttman (Relevan)',
-                        data: [relevancy.ds, relevancy.ft, relevancy.gm, relevancy.cn],
-                        backgroundColor: ['#fb7185', '#60a5fa', '#a78bfa', '#4ade80'],
-                        borderRadius: 12
+                        label: 'Response Time (ms)',
+                        data: data.map(item => item.response_time_ms || item.system_metrics?.response_time_ms || 0),
+                        borderColor: '#dc2626',
+                        backgroundColor: 'rgba(220, 38, 22, 0.04)',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#000000',
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
@@ -128,25 +362,31 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
-                        x: { grid: { display: false } }
+                        y: { beginAtZero: true, grid: { color: '#e5e7eb' }, ticks: { font: { family: 'Inter', size: 10 } } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10 } } }
                     }
                 }
             });
 
-            // Latency Line Chart
-            const ctxLat = document.getElementById('latencyChart').getContext('2d');
-            new Chart(ctxLat, {
-                type: 'line',
+            // 5. Render Chart Bar Komparasi Relevansi Model
+            const percentDS = ((countDS / totalQueries) * 100).toFixed(0);
+            const percentFT = ((countFT / totalQueries) * 100).toFixed(0);
+            const percentGM = ((countGM / totalQueries) * 100).toFixed(0);
+            const percentCC = ((countCC / totalQueries) * 100).toFixed(0);
+
+            const ctxRel = document.getElementById('relevanceChart').getContext('2d');
+            if (relevanceChartInstance) relevanceChartInstance.destroy();
+            relevanceChartInstance = new Chart(ctxRel, {
+                type: 'bar',
                 data: {
-                    labels: data.map((_, i) => `S${i+1}`),
+                    labels: ['DeepSeek R1', 'Fine-Tuned', 'Gemini', 'Conclusion'],
                     datasets: [{
-                        label: 'Latency',
-                        data: data.map(item => item.response_time_ms),
-                        borderColor: '#fb923c',
-                        backgroundColor: 'rgba(251, 146, 60, 0.1)',
-                        fill: true,
-                        tension: 0.4
+                        data: [percentDS, percentFT, percentGM, percentCC],
+                        backgroundColor: ['#dc2626', '#111827', '#e5e7eb', '#4b5563'],
+                        borderRadius: 8,
+                        borderWidth: 1,
+                        borderColor: '#e5e7eb',
+                        barPercentage: 0.5
                     }]
                 },
                 options: {
@@ -154,14 +394,23 @@
                     maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
                     scales: {
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' } },
-                        x: { grid: { display: false } }
+                        y: { max: 100, grid: { color: '#e5e7eb' }, ticks: { callback: value => value + '%', font: { family: 'Inter', size: 10 } } },
+                        x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 10, weight: 'bold' } } }
                     }
                 }
             });
         }
 
-        window.onload = fetchData;
+        function renderEmptyState() {
+            document.getElementById('evaluation-table-body').innerHTML = `
+                <tr>
+                    <td colspan="6" class="p-8 text-center text-gray-400 italic text-xs">Database kosong. Belum ada rekam data evaluasi terkumpul.</td>
+                </tr>
+            `;
+        }
+
+        window.onload = fetchAnalyticsData;
     </script>
 </body>
+
 </html>
